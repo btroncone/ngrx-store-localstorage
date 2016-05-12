@@ -41,7 +41,7 @@ const createLocalStorageMiddleware = (keys : string[]) => {
     }
 };
 
-export const localStorageMiddleware = (keys : string[], rehydrateState : boolean = false) => {
+export const localStorageMiddleware = (keys : string[], rehydrateState : string[]) => {
     const middleware = createLocalStorageMiddleware(keys);
     const localStorageProvider = provide(POST_MIDDLEWARE, {
         multi: true,
@@ -49,6 +49,22 @@ export const localStorageMiddleware = (keys : string[], rehydrateState : boolean
     });
 
     return rehydrateState
-        ? [localStorageProvider, rehydrateApplicationState(keys)]
+        ? [localStorageProvider, keyCheck(keys, rehydrateState)]
         : [localStorageProvider]
+};
+
+const keyCheck = (keys, rehydrateState) => {
+    const result = rehydrateState.filter(state => {
+        return keys.filter(key => key === state).length > 0;
+    });
+    
+    if (result.length === rehydrateState.length) {        
+        rehydrateApplicationState(result);
+    } else {
+        const failedKey = rehydrateState.filter(state => {
+            return !(keys.filter(key => key === state).length > 0);
+        });
+        console.log("The following keys are erroneous:");
+        console.log(failedKey);
+    }
 };
