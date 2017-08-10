@@ -21,8 +21,11 @@ import { todos, visibilityFilter } from './reducers';
 
 
 const reducers: ActionReducerMap<IState> = {todos, visibilityFilter};
-const sync = localStorageSync({keys: ['todos']});
-const metaReducers: Array<ActionReducer<any, any>> = [sync];
+
+export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
+  return localStorageSync({keys: ['todos']})(reducer);
+}
+const metaReducers: Array<ActionReducer<any, any>> = [localStorageSyncReducer];
 
 @NgModule({
   imports: [
