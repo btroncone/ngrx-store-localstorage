@@ -14,19 +14,22 @@ npm install ngrx-store-localstorage --save
 4. Invoke composed function with application reducers as an argument to `StoreModule.provideStore`.
 ```ts
 import { NgModule } from '@angular/core';
-import { StoreModule, combineReducers } from '@ngrx/store';
+import { StoreModule, ActionReducerMap, ActionReducer } from '@ngrx/store';
 import { compose } from '@ngrx/core/compose';
 import { localStorageSync } from 'ngrx-store-localstorage';
 import { todos, visibilityFilter } from './reducers';
 
+
+const reducers: ActionReducerMap<IState> = {todos, visibilityFilter};
+const sync = localStorageSync({keys: ['todos']});
+const metaReducers: Array<ActionReducer<any, any>> = [sync];
+
 @NgModule({
   imports: [
     BrowserModule,
-    StoreModule.provideStore(
-        compose(
-            localStorageSync({keys: ['todos']}),
-            combineReducers
-        )({todos, visibilityFilter})
+    StoreModule.forRoot(
+        reducers,
+        {metaReducers}
     )
   ]
 })
