@@ -1,9 +1,8 @@
 const INIT_ACTION = '@ngrx/store/init';
-const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
 
 // correctly parse dates from local storage
 export const dateReviver = (key: string, value: any) => {
-    if (typeof value === 'string' && (detectDate.test(value))) {
+    if (typeof value === 'string' && (Date.parse(value))) {
         return new Date(value);
     }
     return value;
