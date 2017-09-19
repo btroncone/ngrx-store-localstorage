@@ -89,7 +89,7 @@ export const syncStateUpdate = (state: any, keys: any[], storage: Storage, stora
             let name = Object.keys(key)[0];
             stateSlice = state[name];
 
-            if (key[name]) {
+            if (typeof (stateSlice) !== 'undefined' && key[name]) {
                 // use serialize function if specified.
                 if (key[name].serialize) {
                     stateSlice = key[name].serialize(stateSlice);
