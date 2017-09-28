@@ -15,24 +15,24 @@ npm install ngrx-store-localstorage --save
 ```ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { StoreModule, ActionReducerMap, ActionReducer } from '@ngrx/store';
+import { StoreModule, ActionReducerMap, ActionReducer, MetaReducer } from '@ngrx/store';
 import { localStorageSync } from 'ngrx-store-localstorage';
 import { reducers } from './reducers';
 
-
-const reducers: ActionReducerMap<IState> = {todos, visibilityFilter};
+// reducers example:
+// const reducers: ActionReducerMap<IState> = {todos, visibilityFilter};
 
 export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
   return localStorageSync({keys: ['todos']})(reducer);
 }
-const metaReducers: Array<ActionReducer<any, any>> = [localStorageSyncReducer];
+const metaReducers: MetaReducer<any, any>[] = [localStorageSyncReducer];
 
 @NgModule({
   imports: [
     BrowserModule,
     StoreModule.forRoot(
         reducers,
-        {metaReducers}
+        { metaReducers }
     )
   ]
 })
