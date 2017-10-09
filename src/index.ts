@@ -70,7 +70,14 @@ export const rehydrateApplicationState = (keys: any[], storage: Storage, storage
             if (decrypt) {
                 stateSlice = decrypt(stateSlice);
             }
-            let raw = JSON.parse(stateSlice, reviver);
+
+            const isObjectRegex = new RegExp('\{|\\[');
+            let raw = stateSlice;
+
+            if (isObjectRegex.exec(stateSlice)) {
+                raw = JSON.parse(stateSlice, reviver);
+            }
+
             return Object.assign({}, acc, { [key]: deserialize ? deserialize(raw) : raw });
         }
         return acc;

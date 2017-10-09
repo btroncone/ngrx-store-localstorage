@@ -106,6 +106,9 @@ describe('ngrxLocalStorage', () => {
 
     let undefinedStateJson = JSON.stringify(undefinedState);
 
+    const primitiveStr = 'string is not an object';
+    const initialStatePrimitiveStr = { state: primitiveStr };
+
     it('simple', () => {
         // This tests a very simple state object syncing to mock Storage
         // Since we're not specifiying anything for rehydration, the roundtrip
@@ -124,6 +127,19 @@ describe('ngrxLocalStorage', () => {
 
         expect(t1 instanceof TypeA).toBeTruthy();
         expect(finalState.simple instanceof TypeA).toBeFalsy();
+    });
+
+    it('simple string', () => {
+        const s = new MockStorage();
+        const skr = mockStorageKeySerializer;
+
+        syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false);
+
+        const raw = s.getItem('state');
+        expect(raw).toEqual(primitiveStr);
+
+        const finalState: any = rehydrateApplicationState(['state'], s, skr);
+        expect(finalState.state).toEqual(primitiveStr);
     });
 
     it('filtered', () => {
