@@ -1,6 +1,6 @@
 declare var beforeEachProviders, it, describe, expect, inject;
 require('es6-shim');
-import { syncStateUpdate, rehydrateApplicationState, dateReviver } from '../src/index';
+import { syncStateUpdate, rehydrateApplicationState, dateReviver, AsyncOperations } from '../src/index';
 import *  as CryptoJS from 'crypto-js';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
@@ -109,6 +109,11 @@ describe('ngrxLocalStorage', () => {
     const primitiveStr = 'string is not an object';
     const initialStatePrimitiveStr = { state: primitiveStr };
 
+    const dumbAsyncOperations: AsyncOperations = {
+        resolveOnUpdate: () => { },
+        catchOnUpdate: () => { }
+    };
+
     it('simple', () => {
         // This tests a very simple state object syncing to mock Storage
         // Since we're not specifiying anything for rehydration, the roundtrip
@@ -117,7 +122,7 @@ describe('ngrxLocalStorage', () => {
         let s = new MockStorage();
         let skr = mockStorageKeySerializer;
 
-        syncStateUpdate(initialState, ['state'], s, skr, false);
+        syncStateUpdate(initialState, ['state'], s, skr, false, dumbAsyncOperations);
 
         let raw = s.getItem('state');
         expect(raw).toEqual(t1Json);
@@ -133,7 +138,7 @@ describe('ngrxLocalStorage', () => {
         const s = new MockStorage();
         const skr = mockStorageKeySerializer;
 
-        syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false);
+        syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false, dumbAsyncOperations);
 
         const raw = s.getItem('state');
         expect(raw).toEqual(primitiveStr);
@@ -153,7 +158,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { state: t1 };
         let keys = [{ state: ['astring', 'aclass'] }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let raw = s.getItem('state');
         expect(raw).toEqual(JSON.stringify(t1Filtered));
@@ -173,7 +178,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { state: t1 };
         let keys = [{ state: TypeA.reviver }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let finalState: any = rehydrateApplicationState(keys, s, skr);
         expect(JSON.stringify(finalState)).toEqual(JSON.stringify(initialState));
@@ -189,7 +194,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { state: t1 };
         let keys = [{ state: { reviver: TypeA.reviver } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let finalState: any = rehydrateApplicationState(keys, s, skr);
         expect(JSON.stringify(finalState)).toEqual(JSON.stringify(initialState));
@@ -206,7 +211,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { filtered: t1 };
         let keys = [{ filtered: { filter: ['astring', 'aclass'] } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let raw = s.getItem('filtered');
         expect(raw).toEqual(JSON.stringify(t1Filtered));
@@ -228,7 +233,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { replacer: t1 };
         let keys = [{ replacer: { reviver: TypeA.replacer } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let finalState: any = rehydrateApplicationState(keys, s, skr);
         expect(JSON.stringify(finalState)).toEqual(JSON.stringify({ replacer: t1Filtered }));
@@ -247,7 +252,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { replacer: t1 };
         let keys = [{ replacer: { replacer: ['astring', 'adate', 'anumber'], space: 2 } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         // We want to validate the space parameter, but don't want to trip up on OS specific newlines, so filter the newlines out and
         //  compare against the literal string.
@@ -270,7 +275,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { state: t1 };
         let keys = [{ state: { serialize: TypeA.serialize, deserialize: TypeA.deserialize } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
 
         let finalState: any = rehydrateApplicationState(keys, s, skr);
         expect(JSON.stringify(finalState)).toEqual(initialStateJson);
@@ -282,14 +287,14 @@ describe('ngrxLocalStorage', () => {
         // This tests that the state slice is removed when the state it's undefined
         let s = new MockStorage();
         let skr = mockStorageKeySerializer;
-        syncStateUpdate(initialState, ['state'], s, skr, true);
+        syncStateUpdate(initialState, ['state'], s, skr, true, dumbAsyncOperations);
 
         // do update
         let raw = s.getItem('state');
         expect(raw).toEqual(t1Json);
 
         // ensure that it's erased
-        syncStateUpdate(undefinedState, ['state'], s, skr, true);
+        syncStateUpdate(undefinedState, ['state'], s, skr, true, dumbAsyncOperations);
         raw = s.getItem('state');
         expect(raw).toBeFalsy();
     });
@@ -298,14 +303,14 @@ describe('ngrxLocalStorage', () => {
         // This tests that the state slice is keeped when the state it's undefined
         let s = new MockStorage();
         let skr = mockStorageKeySerializer;
-        syncStateUpdate(initialState, ['state'], s, skr, false);
+        syncStateUpdate(initialState, ['state'], s, skr, false, dumbAsyncOperations);
 
         // do update
         let raw = s.getItem('state');
         expect(raw).toEqual(t1Json);
 
         // test update doesn't erase when it's undefined
-        syncStateUpdate(undefinedState, ['state'], s, skr, false);
+        syncStateUpdate(undefinedState, ['state'], s, skr, false, dumbAsyncOperations);
         raw = s.getItem('state');
         expect(raw).toEqual(t1Json);
     });
@@ -316,7 +321,7 @@ describe('ngrxLocalStorage', () => {
         let initialState = { state: t1 };
         let keys = [{ state: { encrypt: TypeC.encrypt, decrypt: TypeC.decrypt } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
         // Decript stored value and compare with the on-memory state
         let raw = s.getItem('state');
         expect(TypeC.decrypt(raw)).toEqual(JSON.stringify(initialState.state));
@@ -333,14 +338,14 @@ describe('ngrxLocalStorage', () => {
         let keys;
         keys = [{ state: { encrypt: TypeC.encrypt } }];
 
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
         // Stored value must not be encripted due to decrypt function is not present, so must be equal to the on-memory state
         let raw = s.getItem('state');
         expect(raw).toEqual(JSON.stringify(initialState.state));
 
         // Stored value must not be encripted, if one of the encryption functions are not present
         keys = [{ state: { decrypt: TypeC.decrypt } }];
-        syncStateUpdate(initialState, keys, s, skr, false);
+        syncStateUpdate(initialState, keys, s, skr, false, dumbAsyncOperations);
         raw = s.getItem('state');
         expect(raw).toEqual(JSON.stringify(initialState.state));
     });
@@ -350,7 +355,7 @@ describe('ngrxLocalStorage', () => {
         let s = new MockStorage();
         let skr = (key) => `this_key` + key;
         console.log(skr('a'));
-        syncStateUpdate(initialState, ['state'], s, skr, false);
+        syncStateUpdate(initialState, ['state'], s, skr, false, dumbAsyncOperations);
 
         let raw = s.getItem('1232342');
         expect(raw).toBeNull();
@@ -360,5 +365,19 @@ describe('ngrxLocalStorage', () => {
 
         expect(t1 instanceof TypeA).toBeTruthy();
         expect(finalState.simple instanceof TypeA).toBeFalsy();
+    });
+
+    it('simple async string', async () => {
+        const s = new MockStorage();
+        const skr = mockStorageKeySerializer;
+
+        const asyncOperations: AsyncOperations = {
+            resolveOnUpdate: (resolveObject) => {
+                expect(resolveObject.key).toEqual('dummy');
+                expect(resolveObject.stateSlice).toEqual(primitiveStr);
+            },
+            catchOnUpdate: () => {}
+        };
+        syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false, asyncOperations);
     });
 });
