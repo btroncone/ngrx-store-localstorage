@@ -354,7 +354,6 @@ describe('ngrxLocalStorage', () => {
         // This tests that storage key serializer are working.
         let s = new MockStorage();
         let skr = (key) => `this_key` + key;
-        console.log(skr('a'));
         syncStateUpdate(initialState, ['state'], s, skr, false, dumbAsyncOperations);
 
         let raw = s.getItem('1232342');
@@ -367,16 +366,43 @@ describe('ngrxLocalStorage', () => {
         expect(finalState.simple instanceof TypeA).toBeFalsy();
     });
 
-    it('simple async string', async () => {
+    it('simple async string', async (done) => {
         const s = new MockStorage();
         const skr = mockStorageKeySerializer;
 
         const asyncOperations: AsyncOperations = {
             resolveOnUpdate: (resolveObject) => {
-                expect(resolveObject.key).toEqual('dummy');
+                expect(resolveObject.key).toEqual('state');
                 expect(resolveObject.stateSlice).toEqual(primitiveStr);
+                done();
             },
-            catchOnUpdate: () => {}
+            catchOnUpdate: () => {
+                // Shouldn't reach here
+                expect(true).toBeFalsy();
+                done();
+            }
+        };
+        syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false, asyncOperations);
+    });
+
+    it('simple async string throw error', async (done) => {
+        const s = new MockStorage();
+        const skr = mockStorageKeySerializer;
+
+        s.setItem = (s: string, v: string) => {
+            throw('async error');
+        };
+
+        const asyncOperations: AsyncOperations = {
+            resolveOnUpdate: (resolveObject) => {
+                 // Shouldn't reach here
+                expect(true).toBeFalsy();
+                done();
+            },
+            catchOnUpdate: (error) => {
+                expect(error.toString()).toBe('async error');
+                done();
+            }
         };
         syncStateUpdate(initialStatePrimitiveStr, ['state'], s, skr, false, asyncOperations);
     });
