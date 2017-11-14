@@ -84,7 +84,7 @@ export const rehydrateApplicationState = (keys: any[], storage: Storage, storage
     }, {});
 };
 
-export const syncStateUpdate = (state: any, keys: any[], storage: Storage, storageKeySerializer: (key: string) => string, removeOnUndefined: boolean) => {
+export const syncStateUpdate = (state: any, keys: any[], storage: Storage, storageKeySerializer: (key: string) => string, removeOnUndefined: boolean, asyncOperations: AsyncOperations) => {
     keys.forEach(key => {
 
         let stateSlice = state[key];
@@ -139,23 +139,33 @@ export const syncStateUpdate = (state: any, keys: any[], storage: Storage, stora
             key = name;
         }
 
-        if (typeof (stateSlice) !== 'undefined') {
-            try {
-                if (encrypt) {
-                    // ensure that a string message is passed
-                    stateSlice = encrypt(typeof stateSlice === 'string' ? stateSlice : JSON.stringify(stateSlice, replacer, space));
+        new Promise((resolve, reject) => {
+            const serializedKey = storageKeySerializer(key);
+
+            if (typeof (stateSlice) !== 'undefined') {
+                try {
+                    if (encrypt) {
+                        // ensure that a string message is passed
+                        stateSlice = encrypt(typeof stateSlice === 'string' ? stateSlice : JSON.stringify(stateSlice, replacer, space));
+                    }
+                    storage.setItem(serializedKey, typeof stateSlice === 'string' ? stateSlice : JSON.stringify(stateSlice, replacer, space));
+                    resolve({ key, stateSlice });
+                } catch (e) {
+                    console.warn('Unable to save state to localStorage:', e);
+                    reject(e);
                 }
-                storage.setItem(storageKeySerializer(key), typeof stateSlice === 'string' ? stateSlice : JSON.stringify(stateSlice, replacer, space));
-            } catch (e) {
-                console.warn('Unable to save state to localStorage:', e);
+            } else if (typeof (stateSlice) === 'undefined' && removeOnUndefined) {
+                try {
+                    storage.removeItem(serializedKey);
+                    resolve({ key, stateSlice });
+                } catch (e) {
+                    console.warn(`Exception on removing/cleaning undefined '${key}' state`, e);
+                    reject(e);
+                }
             }
-        } else if (typeof (stateSlice) === 'undefined' && removeOnUndefined) {
-            try {
-                storage.removeItem(storageKeySerializer(key));
-            } catch (e) {
-                console.warn(`Exception on removing/cleaning undefined '${key}' state`, e);
-            }
-        }
+        })
+        .then(asyncOperations.resolveOnUpdate)
+        .catch(asyncOperations.catchOnUpdate);
     });
 };
 
@@ -169,6 +179,11 @@ export const localStorageSync = (config: LocalStorageConfig) => (reducer: any) =
         config.storageKeySerializer = (key) => key;
     }
 
+    config.asyncOperations = Object.assign({}, {
+        resolveOnUpdate: () => { },
+        catchOnUpdate: () => { }
+    }, config.asyncOperations);
+
     const stateKeys = validateStateKeys(config.keys);
     const rehydratedState = config.rehydrate ? rehydrateApplicationState(stateKeys, config.storage, config.storageKeySerializer) : undefined;
 
@@ -181,7 +196,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (reducer: any) =
             state = Object.assign({}, state, rehydratedState);
         }
         const nextState = reducer(state, action);
-        syncStateUpdate(nextState, stateKeys, config.storage, config.storageKeySerializer, config.removeOnUndefined);
+        syncStateUpdate(nextState, stateKeys, config.storage, config.storageKeySerializer, config.removeOnUndefined, config.asyncOperations);
         return nextState;
     };
 };
@@ -211,4 +226,10 @@ export interface LocalStorageConfig {
     storage?: Storage;
     removeOnUndefined?: boolean;
     storageKeySerializer?: (key: string) => string;
+    asyncOperations?: AsyncOperations;
+}
+
+export interface AsyncOperations {
+    resolveOnUpdate: (resolveObject: any) => any;
+    catchOnUpdate: (error) => any;
 }
