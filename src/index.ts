@@ -1,3 +1,5 @@
+import merge from 'deepmerge';
+
 const INIT_ACTION = '@ngrx/store/init';
 const UPDATE_ACTION = '@ngrx/store/update-reducers';
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
@@ -232,7 +234,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
       rehydratedState
     ) {
-      state = Object.assign({}, state, rehydratedState);
+      state = merge.all([state, config.initialState || {}, rehydratedState]);
     }
     const nextState = reducer(state, action);
     syncStateUpdate(
@@ -272,6 +274,7 @@ export interface LocalStorageConfig {
   keys: any[];
   rehydrate?: boolean;
   storage?: Storage;
+  initialState?: any;
   removeOnUndefined?: boolean;
   restoreDates?: boolean;
   storageKeySerializer?: (key: string) => string;
