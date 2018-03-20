@@ -1,6 +1,6 @@
 declare var beforeEachProviders, it, describe, expect, inject;
 require('es6-shim');
-import { syncStateUpdate, rehydrateApplicationState, dateReviver } from '../src/index';
+import { syncStateUpdate, rehydrateApplicationState, dateReviver, mergeInitialState } from '../src/index';
 import *  as CryptoJS from 'crypto-js';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
@@ -373,5 +373,35 @@ describe('ngrxLocalStorage', () => {
 
         expect(t1 instanceof TypeA).toBeTruthy();
         expect(finalState.simple instanceof TypeA).toBeFalsy();
+    });
+
+    it('mergeInitialState', () => {
+        // test that nested object are merged, not overwritten
+        let s = new MockStorage();
+        let skr = mockStorageKeySerializer;
+        let initialState = { state: { stored: false, not_stored: false }};
+        let keys = [{ state: ['stored']}];
+        let mock_action = { type: '@ngrx/store/init' };
+
+        // write the initial state,
+        // key "not_stored" will not be included in hydrated state
+        syncStateUpdate(initialState, keys, s, skr, false);
+        let rehydratedState: any = rehydrateApplicationState(keys, s, skr, true);
+        expect(rehydratedState.state.stored).toEqual(false);
+        expect(rehydratedState.state.not_stored).not.toBeDefined();
+
+        // update this state,
+        // "not_stored" still not present
+        let newState = { state: { ...initialState.state, stored: true, not_stored: true } };
+        syncStateUpdate(newState, keys, s, skr, false);
+
+        let newRehydratedState: any = rehydrateApplicationState(keys, s, skr, true);
+        expect(newRehydratedState.state.stored).toEqual(true);
+        expect(newRehydratedState.state.not_stored).not.toBeDefined();
+
+        // merge state with initialstate. now "not_stored" is included with default value
+        let mergedState = mergeInitialState({}, initialState, newRehydratedState, mock_action);
+        expect(mergedState.state.stored).toEqual(true);
+        expect(mergedState.state.not_stored).toEqual(false);
     });
 });

@@ -1,3 +1,5 @@
+import * as merge from 'deepmerge';
+
 const INIT_ACTION = '@ngrx/store/init';
 const UPDATE_ACTION = '@ngrx/store/update-reducers';
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
@@ -228,12 +230,8 @@ export const localStorageSync = (config: LocalStorageConfig) => (
          Handle case where state is rehydrated AND initial state is supplied.
          Any additional state supplied will override rehydrated state for the given key.
          */
-    if (
-      (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
-      rehydratedState
-    ) {
-      state = Object.assign({}, state, rehydratedState);
-    }
+    state = mergeInitialState(state, config.initialState, rehydratedState, action);
+
     const nextState = reducer(state, action);
     syncStateUpdate(
       nextState,
@@ -245,6 +243,16 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     return nextState;
   };
 };
+
+export const mergeInitialState = (state, initialState, rehydratedState, action) => {
+  if (
+    (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
+    rehydratedState
+  ) {
+    return merge.all([state, initialState || {}, rehydratedState]);
+  }
+  return state;
+}
 
 /*
     @deprecated: Use localStorageSync(LocalStorageConfig)
@@ -272,6 +280,7 @@ export interface LocalStorageConfig {
   keys: any[];
   rehydrate?: boolean;
   storage?: Storage;
+  initialState?: any;
   removeOnUndefined?: boolean;
   restoreDates?: boolean;
   storageKeySerializer?: (key: string) => string;
