@@ -232,7 +232,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
       rehydratedState
     ) {
-      state = Object.assign({}, state, rehydratedState);
+      state = mergePartialStates(stateKeys, state, rehydratedState);
     }
     const nextState = reducer(state, action);
     syncStateUpdate(
@@ -245,6 +245,37 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     return nextState;
   };
 };
+
+export const mergePartialStates = (stateKeys: (string | { [idx: string]: null | undefined | string[] })[], currentState: {}, rehydratedState: {}) => {
+  let finalState = { ...currentState };
+
+  stateKeys.map((key) => {
+    if ( typeof key === 'string' ) {
+      finalState = {
+        ...finalState,
+        [key]: rehydratedState[key],
+      };
+    } else {
+      const name = Object.keys(key)[0];
+      const newValues = {};
+
+      const keys = key[name]
+      if (keys) {
+        keys.map((key) => newValues[key] = rehydratedState[name][key])
+      }
+
+      finalState = {
+        ...finalState,
+        [name]: {
+          ...finalState[name],
+          ...newValues,
+        },
+      };
+    }
+  });
+
+  return finalState;
+}
 
 /*
     @deprecated: Use localStorageSync(LocalStorageConfig)
