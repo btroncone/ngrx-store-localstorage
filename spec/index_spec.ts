@@ -377,7 +377,6 @@ describe('ngrxLocalStorage', () => {
 
     it('merges partial states', () => {
         const keyDef = ['foo', { bar: ['baz'] }];
-      expect(true).toEqual(false);
         expect(
           mergePartialStates(
             keyDef,
