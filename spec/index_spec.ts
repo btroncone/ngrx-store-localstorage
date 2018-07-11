@@ -1,6 +1,6 @@
 declare var beforeEachProviders, it, describe, expect, inject;
 require('es6-shim');
-import { syncStateUpdate, rehydrateApplicationState, dateReviver } from '../src/index';
+import { syncStateUpdate, rehydrateApplicationState, dateReviver, mergePartialStates } from '../src/index';
 import *  as CryptoJS from 'crypto-js';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
@@ -373,5 +373,22 @@ describe('ngrxLocalStorage', () => {
 
         expect(t1 instanceof TypeA).toBeTruthy();
         expect(finalState.simple instanceof TypeA).toBeFalsy();
+    });
+
+    it('merges partial states', () => {
+        const keyDef = ['foo', { bar: ['baz'] }];
+        expect(
+          mergePartialStates(
+            keyDef,
+            { bar: {baz: 123, nitch: 456} },
+            { foo: 'hello', bar: {baz: 1} },
+          )
+        ).toEqual({
+          foo: 'hello',
+          bar: {
+            baz: 1,
+            nitch: 456
+          }
+        });
     });
 });
