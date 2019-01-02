@@ -246,7 +246,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
       rehydratedState
     ) {
-      state = Object.assign({}, state, rehydratedState);
+      state = config.stateMergeFunction ? config.stateMergeFunction(state, rehydratedState) : Object.assign({}, state, rehydratedState);
     }
     const nextState = reducer(state, action);
     syncStateUpdate(
@@ -291,4 +291,5 @@ export interface LocalStorageConfig {
   restoreDates?: boolean;
   storageKeySerializer?: (key: string) => string;
   syncCondition?: (state: any) => any;
+  stateMergeFunction?: (state: any, rehydratedState: any) => any;
 }
