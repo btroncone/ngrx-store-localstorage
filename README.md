@@ -111,3 +111,6 @@ A shorthand that wraps the functionalities of `localStorageSync` and asumes `loc
             * filter: An array of properties which should be synced (same format as the stand-along array specified above).
 * `rehydrateState` \(*boolean? = false*): Pull initial state from local storage on startup.
 * `removeOnUndefined` \(*boolean? = false*): Specify if the state is removed from the storage when the new value is undefined.
+
+## Known issues
+* Currently, rehydration restores the objects entirely without checking if the restored keys are still desired by the config, and without removing unwanted ones. This is a regression bug that we chose to accept when solving a more serious bug.
