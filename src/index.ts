@@ -25,7 +25,7 @@ const validateStateKeys = (keys: any[]) => {
     if (typeof attr !== 'string') {
       throw new TypeError(
         `localStorageSync Unknown Parameter Type: ` +
-          `Expected type of string, got ${typeof attr}`
+        `Expected type of string, got ${typeof attr}`
       );
     }
     return key;
@@ -70,7 +70,7 @@ export const rehydrateApplicationState = (
         } else {
           console.error(
             `Either encrypt or decrypt is not a function on '${
-              curr[key]
+            curr[key]
             }' key object.`
           );
         }
@@ -78,7 +78,7 @@ export const rehydrateApplicationState = (
         // Let know that one of the encryption functions is not provided
         console.error(
           `Either encrypt or decrypt function is not present on '${
-            curr[key]
+          curr[key]
           }' key object.`
         );
       }
@@ -165,7 +165,7 @@ export const syncStateUpdate = (
             // If one of those is not present, then let know that one is missing
             console.error(
               `Either encrypt or decrypt function is not present on '${
-                key[name]
+              key[name]
               }' key object.`
             );
           }
@@ -229,16 +229,6 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     config.restoreDates = true;
   }
 
-  const stateKeys = validateStateKeys(config.keys);
-  const rehydratedState = config.rehydrate
-    ? rehydrateApplicationState(
-        stateKeys,
-        config.storage,
-        config.storageKeySerializer,
-        config.restoreDates
-      )
-    : undefined;
-
   return function (state, action: any) {
     let nextState;
 
@@ -250,6 +240,15 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       nextState = { ...state };
     }
 
+    const stateKeys = validateStateKeys(config.keys);
+    const rehydratedState = config.rehydrate
+      ? rehydrateApplicationState(
+        stateKeys,
+        config.storage,
+        config.storageKeySerializer,
+        config.restoreDates
+      )
+      : undefined;
     if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
       nextState = merge({}, nextState, rehydratedState);
     }

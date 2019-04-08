@@ -5,6 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build_dist": "rimraf dist && tsc",
+    "prepare": "npm run prepublish",
     "prepublish": "npm run build_dist",
     "clean:test": "rimraf tmp",
     "clean:dist": "rimraf dist",
