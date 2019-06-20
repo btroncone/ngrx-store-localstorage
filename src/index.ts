@@ -271,28 +271,6 @@ export const localStorageSync = (config: LocalStorageConfig) => (
   };
 };
 
-/*
-    @deprecated: Use localStorageSync(LocalStorageConfig)
-
-    Wraps localStorageSync functionality acepting the removeOnUndefined boolean parameter in order
-    to clean/remove the state from the browser on situations like state reset or logout.
-    Defines localStorage as default storage.
-*/
-export const localStorageSyncAndClean = (
-  keys: any[],
-  rehydrate: boolean = false,
-  removeOnUndefined: boolean = false
-) => (reducer: any) => {
-  let config: LocalStorageConfig = {
-    keys: keys,
-    rehydrate: rehydrate,
-    storage: localStorage,
-    removeOnUndefined: removeOnUndefined
-  };
-
-  return this.localStorageSync(config);
-};
-
 export interface LocalStorageConfig {
   keys: any[];
   rehydrate?: boolean;

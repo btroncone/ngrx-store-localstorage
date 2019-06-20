@@ -79,35 +79,5 @@ An interface defining the configuration attributes to bootstrap `localStorageSyn
 * `syncCondition` (optional) `(state) => boolean`: When set, sync to storage medium will only occur when this function returns a true boolean. Example: `(state) => state.config.syncToStorage` will check the state tree under config.syncToStorage and if true, it will sync to the storage. If undefined or false it will not sync to storage. Often useful for "remember me" options in login.
 Usage: `localStorageSync({keys: ['todos', 'visibilityFilter'], storageKeySerializer: (key) => 'cool_' + key, ... })`. In this example `Storage` will use keys `cool_todos` and `cool_visibilityFilter` keys to store `todos` and `visibilityFilter` slices of state). The key itself is used by default - `(key) => key`.
 
----
-### ~~`localStorageSyncAndClean(keys: any[], rehydrate: boolean = false, removeOnUndefined: boolean = false): Reducer`~~
-**This function is deprecated and soon will be removed, please use _localStorageSync(LocalStorageConfig)_.**
-
-A shorthand that wraps the functionalities of `localStorageSync` and asumes `localStorage` as the storage.
-
-#### Arguments
-
-* `keys` State keys to sync with local storage. The keys can be defined in two different formats:
-    * \(*string[]*): Array of strings representing the state (reducer) keys. Full state will be synced (e.g. `localStorageSync(['todos'])`).
-
-    * \(*object[]*): Array of objects where for each object the key represents the state key and the value represents custom serialize/deserialize options. This can be one of the following:
-
-        * An array of properties which should be synced. This allows for the partial state sync (e.g. `localStorageSync([{todos: ['name', 'status'] }, ... ])`).
-
-        * A reviver function as specified in the [JSON.parse documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
-
-        * An object with properties that specify one or more of the following:
-
-            * serialize: A function that takes a state object and returns a plain json object to pass to json.stringify.
-
-            * deserialize: A function that takes that takes the raw JSON from JSON.parse and builds a state object.
-
-            * replacer: A replacer function as specified in the [JSON.stringify documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
-
-            * space: The space value to pass JSON.stringify.
-
-            * reviver: A reviver function as specified in the [JSON.parse documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
-
-            * filter: An array of properties which should be synced (same format as the stand-along array specified above).
-* `rehydrateState` \(*boolean? = false*): Pull initial state from local storage on startup.
-* `removeOnUndefined` \(*boolean? = false*): Specify if the state is removed from the storage when the new value is undefined.
+## Known issues
+* Currently, rehydration restores the objects entirely without checking if the restored keys are still desired by the config, and without removing unwanted ones. This is a regression bug that we chose to accept when solving a more serious bug.
