@@ -1,7 +1,6 @@
 import * as merge from 'lodash.merge';
 
 const INIT_ACTION = '@ngrx/store/init';
-const UPDATE_ACTION = '@ngrx/store/update-reducers';
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
 
 // correctly parse dates from local storage
@@ -257,7 +256,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       nextState = { ...state };
     }
 
-    if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
+    if (action.type === INIT_ACTION && rehydratedState) {
       nextState = merge({}, nextState, rehydratedState);
     }
 

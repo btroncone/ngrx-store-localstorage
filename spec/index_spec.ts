@@ -4,6 +4,7 @@ import { syncStateUpdate, rehydrateApplicationState, dateReviver, localStorageSy
 import *  as CryptoJS from 'crypto-js';
 import 'localstorage-polyfill';
 const INIT_ACTION = '@ngrx/store/init';
+const UPDATE_ACTION = '@ngrx/store/update-reducers';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
 // The top level class has static functions to help test reviver, replacer, serialize and deserialize
@@ -485,5 +486,26 @@ describe('ngrxLocalStorage', () => {
           feature1: { slice11: true, slice12: [1, 2], slice13: {} },
           feature2: { slice21: true, slice22: [1, 2], slice23: {} },
         });
+    });
+
+   it('should not merge with rehydrated state after reducers are updated', () => {
+        const initialToken = 'initial token';
+        const newToken = 'new token';
+
+        localStorage.setItem('token', initialToken);
+
+        const reducer = (state = {}, action) => state;
+        const metaReducer = localStorageSync({keys: ['token'], rehydrate: true});
+        const action = {type: INIT_ACTION};
+
+        const tempState = metaReducer(reducer)({}, action);
+
+        expect(localStorage.getItem('token')).toEqual(initialToken);
+        expect(tempState.token).toEqual(initialToken);
+
+        const updateAction = {type: UPDATE_ACTION};
+        const finalState = metaReducer(reducer)({ token: newToken }, updateAction);
+        expect(localStorage.getItem('token')).toEqual(newToken);
+        expect(finalState.token).toEqual(newToken);
     });
 });
