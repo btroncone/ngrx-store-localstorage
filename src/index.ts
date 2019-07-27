@@ -15,7 +15,7 @@ export const dateReviver = (key: string, value: any) => {
 const dummyReviver = (key: string, value: any) => value;
 
 const checkIsBrowserEnv = () => {
-    return typeof window !== 'undefined'
+  return typeof window !== 'undefined';
 };
 
 const validateStateKeys = (keys: any[]) => {
@@ -220,15 +220,17 @@ export const syncStateUpdate = (
 };
 
 // Default merge strategy is a full deep merge.
-export const defaultMergeReducer = (state: any, rehydratedState: any, action: any) => { 
-
-  if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
-    const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
-    const options: deepmerge.Options = {
-      arrayMerge: overwriteMerge
-    };
-
+export const defaultMergeReducer = (state: any, rehydratedState: any, action: any) => {
+  const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+  const options: deepmerge.Options = {
+    arrayMerge: overwriteMerge
+  };
+  if (action.type === INIT_ACTION && rehydratedState) {
     state = deepmerge(state, rehydratedState, options);
+  } else if (action.type === UPDATE_ACTION && rehydratedState) {
+    Object.keys(rehydratedState).forEach(partialState => {
+      state[partialState] = deepmerge(state[partialState] || {}, rehydratedState[partialState], options);
+    });
   }
 
   return state;
@@ -282,7 +284,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     // Merge the store state with the rehydrated state using
     // either a user-defined reducer or the default.
     nextState = mergeReducer(nextState, rehydratedState, action);
-  
+
     nextState = reducer(nextState, action);
 
     if (action.type !== INIT_ACTION) {
