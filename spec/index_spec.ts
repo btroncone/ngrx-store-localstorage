@@ -3,6 +3,7 @@ require('es6-shim');
 import { syncStateUpdate, rehydrateApplicationState, dateReviver, localStorageSync } from '../src/index';
 import *  as CryptoJS from 'crypto-js';
 import 'localstorage-polyfill';
+import { storeFreeze } from 'ngrx-store-freeze';
 const INIT_ACTION = '@ngrx/store/init';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
@@ -454,7 +455,7 @@ describe('ngrxLocalStorage', () => {
         const action = {type: INIT_ACTION};
 
         // Resultant state should merge the oldstring state and our initual state
-        const finalState = metaReducer(reducer)(initialState, action);
+        const finalState = storeFreeze(metaReducer(reducer))(initialState, action);
         expect(finalState.state.astring).toEqual(initialState.state.astring);
     });
 
