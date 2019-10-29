@@ -1,4 +1,4 @@
-import * as merge from 'lodash.merge';
+import * as deepmerge from 'deepmerge';
 
 const INIT_ACTION = '@ngrx/store/init';
 const UPDATE_ACTION = '@ngrx/store/update-reducers';
@@ -13,6 +13,10 @@ export const dateReviver = (key: string, value: any) => {
 };
 
 const dummyReviver = (key: string, value: any) => value;
+
+const checkIsBrowserEnv = () => {
+    return typeof window !== 'undefined'
+};
 
 const validateStateKeys = (keys: any[]) => {
   return keys.map(key => {
@@ -83,24 +87,25 @@ export const rehydrateApplicationState = (
         );
       }
     }
+    if (storage !== undefined) {
+      let stateSlice = storage.getItem(storageKeySerializer(key));
+      if (stateSlice) {
+        // Use provided decrypt function
+        if (decrypt) {
+          stateSlice = decrypt(stateSlice);
+        }
 
-    let stateSlice = storage.getItem(storageKeySerializer(key));
-    if (stateSlice) {
-      // Use provided decrypt function
-      if (decrypt) {
-        stateSlice = decrypt(stateSlice);
+        const isObjectRegex = new RegExp('{|\\[');
+        let raw = stateSlice;
+
+        if (stateSlice === 'null' || isObjectRegex.test(stateSlice.charAt(0))) {
+          raw = JSON.parse(stateSlice, reviver);
+        }
+
+        return Object.assign({}, acc, {
+          [key]: deserialize ? deserialize(raw) : raw
+        });
       }
-
-      const isObjectRegex = new RegExp('{|\\[');
-      let raw = stateSlice;
-
-      if (stateSlice === 'null' || isObjectRegex.test(stateSlice.charAt(0))) {
-        raw = JSON.parse(stateSlice, reviver);
-      }
-
-      return Object.assign({}, acc, {
-        [key]: deserialize ? deserialize(raw) : raw
-      });
     }
     return acc;
   }, {});
@@ -182,7 +187,7 @@ export const syncStateUpdate = (
       key = name;
     }
 
-    if (typeof stateSlice !== 'undefined') {
+    if (typeof stateSlice !== 'undefined' && storage !== undefined) {
       try {
         if (encrypt) {
           // ensure that a string message is passed
@@ -217,7 +222,9 @@ export const syncStateUpdate = (
 export const localStorageSync = (config: LocalStorageConfig) => (
   reducer: any
 ) => {
-  if (config.storage === undefined) {
+  if (config.storage === undefined &&
+      !config.checkStorageAvailability || (config.checkStorageAvailability && checkIsBrowserEnv())
+  ) {
     config.storage = localStorage || window.localStorage;
   }
 
@@ -250,7 +257,11 @@ export const localStorageSync = (config: LocalStorageConfig) => (
       )
       : undefined;
     if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
-      nextState = merge({}, nextState, rehydratedState);
+      const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+      const options: deepmerge.Options = {
+        arrayMerge: overwriteMerge
+      };
+      nextState = deepmerge(nextState, rehydratedState, options);
     }
 
     nextState = reducer(nextState, action);
@@ -300,4 +311,5 @@ export interface LocalStorageConfig {
   restoreDates?: boolean;
   storageKeySerializer?: (key: string) => string;
   syncCondition?: (state: any) => any;
+  checkStorageAvailability?: boolean;
 }

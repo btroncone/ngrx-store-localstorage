@@ -1,6 +1,6 @@
 {
   "name": "ngrx-store-localstorage",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "description": "State and local storage syncing for @ngrx/store",
   "main": "./dist/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/btroncone/ngrx-store-localstorage#readme",
   "peerDependencies": {
-    "@ngrx/store": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
+    "@ngrx/store": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "devDependencies": {
     "@angular/core": "^2.4.7",
@@ -57,6 +57,6 @@
   },
   "typings": "./dist/index.d.ts",
   "dependencies": {
-    "lodash.merge": "^4.6.1"
+    "deepmerge": "^3.2.0"
   }
 }

@@ -77,6 +77,8 @@ An interface defining the configuration attributes to bootstrap `localStorageSyn
 * `storageKeySerializer` (optional) `(key: string) => string`: Сustom serialize function for storage keys, used to avoid Storage conflicts. 
 * `restoreDates` \(*boolean? = true*): Restore serialized date objects. If you work directly with ISO date strings, set this option to `false`.
 * `syncCondition` (optional) `(state) => boolean`: When set, sync to storage medium will only occur when this function returns a true boolean. Example: `(state) => state.config.syncToStorage` will check the state tree under config.syncToStorage and if true, it will sync to the storage. If undefined or false it will not sync to storage. Often useful for "remember me" options in login.
+* `checkStorageAvailability` \(*boolean? = false*): Specify if the storage availability checking is expected, i.e. for server side rendering / Universal.
+
 Usage: `localStorageSync({keys: ['todos', 'visibilityFilter'], storageKeySerializer: (key) => 'cool_' + key, ... })`. In this example `Storage` will use keys `cool_todos` and `cool_visibilityFilter` keys to store `todos` and `visibilityFilter` slices of state). The key itself is used by default - `(key) => key`.
 
 ---
@@ -111,3 +113,4 @@ A shorthand that wraps the functionalities of `localStorageSync` and asumes `loc
             * filter: An array of properties which should be synced (same format as the stand-along array specified above).
 * `rehydrateState` \(*boolean? = false*): Pull initial state from local storage on startup.
 * `removeOnUndefined` \(*boolean? = false*): Specify if the state is removed from the storage when the new value is undefined.
+* `checkStorageAvailability` \(*boolean? = false*): Specify if the storage availability checking is expected, i.e. for server side rendering / Universal.
