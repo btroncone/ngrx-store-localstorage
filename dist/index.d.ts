@@ -11,4 +11,5 @@ export interface LocalStorageConfig {
     restoreDates?: boolean;
     storageKeySerializer?: (key: string) => string;
     syncCondition?: (state: any) => any;
+    checkStorageAvailability?: boolean;
 }

@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var merge = require("lodash.merge");
+var deepmerge = require("deepmerge");
 var INIT_ACTION = '@ngrx/store/init';
 var UPDATE_ACTION = '@ngrx/store/update-reducers';
 var detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
@@ -21,6 +21,9 @@ exports.dateReviver = function (key, value) {
     return value;
 };
 var dummyReviver = function (key, value) { return value; };
+var checkIsBrowserEnv = function () {
+    return typeof window !== 'undefined';
+};
 var validateStateKeys = function (keys) {
     return keys.map(function (key) {
         var attr = key;
@@ -72,20 +75,22 @@ exports.rehydrateApplicationState = function (keys, storage, storageKeySerialize
                 console.error("Either encrypt or decrypt function is not present on '" + curr[key] + "' key object.");
             }
         }
-        var stateSlice = storage.getItem(storageKeySerializer(key));
-        if (stateSlice) {
-            // Use provided decrypt function
-            if (decrypt) {
-                stateSlice = decrypt(stateSlice);
+        if (storage !== undefined) {
+            var stateSlice = storage.getItem(storageKeySerializer(key));
+            if (stateSlice) {
+                // Use provided decrypt function
+                if (decrypt) {
+                    stateSlice = decrypt(stateSlice);
+                }
+                var isObjectRegex = new RegExp('{|\\[');
+                var raw = stateSlice;
+                if (stateSlice === 'null' || isObjectRegex.test(stateSlice.charAt(0))) {
+                    raw = JSON.parse(stateSlice, reviver);
+                }
+                return Object.assign({}, acc, (_a = {},
+                    _a[key] = deserialize ? deserialize(raw) : raw,
+                    _a));
             }
-            var isObjectRegex = new RegExp('{|\\[');
-            var raw = stateSlice;
-            if (stateSlice === 'null' || isObjectRegex.test(stateSlice.charAt(0))) {
-                raw = JSON.parse(stateSlice, reviver);
-            }
-            return Object.assign({}, acc, (_a = {},
-                _a[key] = deserialize ? deserialize(raw) : raw,
-                _a));
         }
         return acc;
     }, {});
@@ -153,7 +158,7 @@ exports.syncStateUpdate = function (state, keys, storage, storageKeySerializer, 
             }
             key = name_1;
         }
-        if (typeof stateSlice !== 'undefined') {
+        if (typeof stateSlice !== 'undefined' && storage !== undefined) {
             try {
                 if (encrypt) {
                     // ensure that a string message is passed
@@ -180,7 +185,8 @@ exports.syncStateUpdate = function (state, keys, storage, storageKeySerializer, 
     });
 };
 exports.localStorageSync = function (config) { return function (reducer) {
-    if (config.storage === undefined) {
+    if (config.storage === undefined &&
+        !config.checkStorageAvailability || (config.checkStorageAvailability && checkIsBrowserEnv())) {
         config.storage = localStorage || window.localStorage;
     }
     if (config.storageKeySerializer === undefined) {
@@ -204,7 +210,11 @@ exports.localStorageSync = function (config) { return function (reducer) {
             ? exports.rehydrateApplicationState(stateKeys, config.storage, config.storageKeySerializer, config.restoreDates)
             : undefined;
         if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
-            nextState = merge({}, nextState, rehydratedState);
+            var overwriteMerge = function (destinationArray, sourceArray, options) { return sourceArray; };
+            var options = {
+                arrayMerge: overwriteMerge
+            };
+            nextState = deepmerge(nextState, rehydratedState, options);
         }
         nextState = reducer(nextState, action);
         if (action.type !== INIT_ACTION) {

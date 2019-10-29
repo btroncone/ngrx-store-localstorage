@@ -1,12 +1,13 @@
-import * as deepmerge from 'deepmerge';
+import * as deepmerge from "deepmerge";
+import * as Cookies from "js-cookie";
 
-const INIT_ACTION = '@ngrx/store/init';
-const UPDATE_ACTION = '@ngrx/store/update-reducers';
+const INIT_ACTION = "@ngrx/store/init";
+const UPDATE_ACTION = "@ngrx/store/update-reducers";
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
 
 // correctly parse dates from local storage
 export const dateReviver = (key: string, value: any) => {
-  if (typeof value === 'string' && detectDate.test(value)) {
+  if (typeof value === "string" && detectDate.test(value)) {
     return new Date(value);
   }
   return value;
@@ -15,21 +16,21 @@ export const dateReviver = (key: string, value: any) => {
 const dummyReviver = (key: string, value: any) => value;
 
 const checkIsBrowserEnv = () => {
-    return typeof window !== 'undefined'
+  return typeof window !== "undefined";
 };
 
 const validateStateKeys = (keys: any[]) => {
   return keys.map(key => {
     let attr = key;
 
-    if (typeof key === 'object') {
+    if (typeof key === "object") {
       attr = Object.keys(key)[0];
     }
 
-    if (typeof attr !== 'string') {
+    if (typeof attr !== "string") {
       throw new TypeError(
         `localStorageSync Unknown Parameter Type: ` +
-        `Expected type of string, got ${typeof attr}`
+          `Expected type of string, got ${typeof attr}`
       );
     }
     return key;
@@ -48,10 +49,10 @@ export const rehydrateApplicationState = (
     let deserialize = undefined;
     let decrypt = undefined;
 
-    if (typeof key === 'object') {
+    if (typeof key === "object") {
       key = Object.keys(key)[0];
       // use the custom reviver function
-      if (typeof curr[key] === 'function') {
+      if (typeof curr[key] === "function") {
         reviver = curr[key];
       } else {
         // use custom reviver function if available
@@ -67,23 +68,19 @@ export const rehydrateApplicationState = (
       // Ensure that encrypt and decrypt functions are both presents
       if (curr[key].encrypt && curr[key].decrypt) {
         if (
-          typeof curr[key].encrypt === 'function' &&
-          typeof curr[key].decrypt === 'function'
+          typeof curr[key].encrypt === "function" &&
+          typeof curr[key].decrypt === "function"
         ) {
           decrypt = curr[key].decrypt;
         } else {
           console.error(
-            `Either encrypt or decrypt is not a function on '${
-            curr[key]
-            }' key object.`
+            `Either encrypt or decrypt is not a function on '${curr[key]}' key object.`
           );
         }
       } else if (curr[key].encrypt || curr[key].decrypt) {
         // Let know that one of the encryption functions is not provided
         console.error(
-          `Either encrypt or decrypt function is not present on '${
-          curr[key]
-          }' key object.`
+          `Either encrypt or decrypt function is not present on '${curr[key]}' key object.`
         );
       }
     }
@@ -95,10 +92,10 @@ export const rehydrateApplicationState = (
           stateSlice = decrypt(stateSlice);
         }
 
-        const isObjectRegex = new RegExp('{|\\[');
+        const isObjectRegex = new RegExp("{|\\[");
         let raw = stateSlice;
 
-        if (stateSlice === 'null' || isObjectRegex.test(stateSlice.charAt(0))) {
+        if (stateSlice === "null" || isObjectRegex.test(stateSlice.charAt(0))) {
           raw = JSON.parse(stateSlice, reviver);
         }
 
@@ -138,11 +135,11 @@ export const syncStateUpdate = (
     let space = undefined;
     let encrypt = undefined;
 
-    if (typeof key === 'object') {
+    if (typeof key === "object") {
       let name = Object.keys(key)[0];
       stateSlice = state[name];
 
-      if (typeof stateSlice !== 'undefined' && key[name]) {
+      if (typeof stateSlice !== "undefined" && key[name]) {
         // use serialize function if specified.
         if (key[name].serialize) {
           stateSlice = key[name].serialize(stateSlice);
@@ -163,15 +160,13 @@ export const syncStateUpdate = (
 
           // Check if encrypt and decrypt are present, also checked at this#rehydrateApplicationState()
           if (key[name].encrypt && key[name].decrypt) {
-            if (typeof key[name].encrypt === 'function') {
+            if (typeof key[name].encrypt === "function") {
               encrypt = key[name].encrypt;
             }
           } else if (key[name].encrypt || key[name].decrypt) {
             // If one of those is not present, then let know that one is missing
             console.error(
-              `Either encrypt or decrypt function is not present on '${
-              key[name]
-              }' key object.`
+              `Either encrypt or decrypt function is not present on '${key[name]}' key object.`
             );
           }
         }
@@ -187,26 +182,26 @@ export const syncStateUpdate = (
       key = name;
     }
 
-    if (typeof stateSlice !== 'undefined' && storage !== undefined) {
+    if (typeof stateSlice !== "undefined" && storage !== undefined) {
       try {
         if (encrypt) {
           // ensure that a string message is passed
           stateSlice = encrypt(
-            typeof stateSlice === 'string'
+            typeof stateSlice === "string"
               ? stateSlice
               : JSON.stringify(stateSlice, replacer, space)
           );
         }
         storage.setItem(
           storageKeySerializer(key),
-          typeof stateSlice === 'string'
+          typeof stateSlice === "string"
             ? stateSlice
             : JSON.stringify(stateSlice, replacer, space)
         );
       } catch (e) {
-        console.warn('Unable to save state to localStorage:', e);
+        console.warn("Unable to save state to localStorage:", e);
       }
-    } else if (typeof stateSlice === 'undefined' && removeOnUndefined) {
+    } else if (typeof stateSlice === "undefined" && removeOnUndefined) {
       try {
         storage.removeItem(storageKeySerializer(key));
       } catch (e) {
@@ -222,10 +217,15 @@ export const syncStateUpdate = (
 export const localStorageSync = (config: LocalStorageConfig) => (
   reducer: any
 ) => {
-  if (config.storage === undefined &&
-      !config.checkStorageAvailability || (config.checkStorageAvailability && checkIsBrowserEnv())
+  if (
+    (config.storage === undefined && !config.checkStorageAvailability) ||
+    (config.checkStorageAvailability && checkIsBrowserEnv())
   ) {
-    config.storage = localStorage || window.localStorage;
+    config.storage = {
+      getItem: Cookies.get,
+      setItem: Cookies.set,
+      removeItem: Cookies.remove
+    };
   }
 
   if (config.storageKeySerializer === undefined) {
@@ -236,12 +236,12 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     config.restoreDates = true;
   }
 
-  return function (state, action: any) {
+  return function(state, action: any) {
     let nextState;
 
     // If state arrives undefined, we need to let it through the supplied reducer
     // in order to get a complete state as defined by user
-    if ((action.type === INIT_ACTION) && !state) {
+    if (action.type === INIT_ACTION && !state) {
       nextState = reducer(state, action);
     } else {
       nextState = { ...state };
@@ -250,14 +250,18 @@ export const localStorageSync = (config: LocalStorageConfig) => (
     const stateKeys = validateStateKeys(config.keys);
     const rehydratedState = config.rehydrate
       ? rehydrateApplicationState(
-        stateKeys,
-        config.storage,
-        config.storageKeySerializer,
-        config.restoreDates
-      )
+          stateKeys,
+          config.storage,
+          config.storageKeySerializer,
+          config.restoreDates
+        )
       : undefined;
-    if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
-      const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+    if (
+      (action.type === INIT_ACTION || action.type === UPDATE_ACTION) &&
+      rehydratedState
+    ) {
+      const overwriteMerge = (destinationArray, sourceArray, options) =>
+        sourceArray;
       const options: deepmerge.Options = {
         arrayMerge: overwriteMerge
       };
@@ -273,7 +277,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
         config.storage,
         config.storageKeySerializer,
         config.removeOnUndefined,
-        config.syncCondition,
+        config.syncCondition
       );
     }
 
@@ -296,7 +300,11 @@ export const localStorageSyncAndClean = (
   let config: LocalStorageConfig = {
     keys: keys,
     rehydrate: rehydrate,
-    storage: localStorage,
+    storage: {
+      getItem: Cookies.get,
+      setItem: Cookies.set,
+      removeItem: Cookies.remove
+    },
     removeOnUndefined: removeOnUndefined
   };
 
@@ -306,7 +314,7 @@ export const localStorageSyncAndClean = (
 export interface LocalStorageConfig {
   keys: any[];
   rehydrate?: boolean;
-  storage?: Storage;
+  storage?: any;
   removeOnUndefined?: boolean;
   restoreDates?: boolean;
   storageKeySerializer?: (key: string) => string;
