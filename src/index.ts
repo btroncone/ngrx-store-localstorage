@@ -47,6 +47,7 @@ export const rehydrateApplicationState = (
     let reviver = restoreDates ? dateReviver : dummyReviver;
     let deserialize;
     let decrypt;
+    let storageKey;
 
     if (typeof key === 'object') {
       key = Object.keys(key)[0];
@@ -88,13 +89,17 @@ export const rehydrateApplicationState = (
       }
     }
     if (storage !== undefined) {
-      let stateSlice = storage.getItem(storageKeySerializer(key));
-      if (stateSlice) {
+      storageKey = storageKeySerializer(key);
+      let stateSlice;
+      
+      if (decrypt) {
         // Use provided decrypt function
-        if (decrypt) {
-          stateSlice = decrypt(stateSlice);
-        }
+        storageKey = decrypt(storageKey);
+      }
 
+      stateSlice = storage.getItem(storageKey);
+      
+      if (stateSlice) {
         const isObjectRegex = new RegExp('{|\\[');
         let raw = stateSlice;
 
@@ -134,6 +139,7 @@ export const syncStateUpdate = (
   }
   keys.forEach(key => {
     let stateSlice = state[key];
+    let storageKey;
     let replacer;
     let space;
     let encrypt;
@@ -141,6 +147,7 @@ export const syncStateUpdate = (
     if (typeof key === 'object') {
       let name = Object.keys(key)[0];
       stateSlice = state[name];
+      storageKey = storageKeySerializer(key);
 
       if (typeof stateSlice !== 'undefined' && key[name]) {
         // use serialize function if specified.
@@ -196,9 +203,11 @@ export const syncStateUpdate = (
               ? stateSlice
               : JSON.stringify(stateSlice, replacer, space)
           );
+          storageKey = encrypt(storageKey);
         }
+
         storage.setItem(
-          storageKeySerializer(key),
+          storageKey,
           typeof stateSlice === 'string'
             ? stateSlice
             : JSON.stringify(stateSlice, replacer, space)
@@ -208,7 +217,11 @@ export const syncStateUpdate = (
       }
     } else if (typeof stateSlice === 'undefined' && removeOnUndefined) {
       try {
-        storage.removeItem(storageKeySerializer(key));
+        if (encrypt) {
+          storageKey = encrypt(storageKey);
+        }
+
+        storage.removeItem(storageKey);
       } catch (e) {
         console.warn(
           `Exception on removing/cleaning undefined '${key}' state`,
