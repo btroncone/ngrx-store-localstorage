@@ -5,6 +5,7 @@ import * as deepmerge from 'deepmerge';
 import 'localstorage-polyfill';
 import { dateReviver, localStorageSync, rehydrateApplicationState, syncStateUpdate } from '../src/index';
 const INIT_ACTION = '@ngrx/store/init';
+const UPDATE_ACTION = '@ngrx/store/update-reducers';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
 // The top level class has static functions to help test reviver, replacer, serialize and deserialize
@@ -453,7 +454,7 @@ describe('ngrxLocalStorage', () => {
         const metaReducer = localStorageSync({keys: ['state'], rehydrate: true});
         const action = {type: INIT_ACTION};
 
-        // Resultant state should merge the oldstring state and our initual state
+        // Resultant state should merge the oldstring state and our initial state
         const finalState = metaReducer(reducer)(initialState, action);
         expect(finalState.state.astring).toEqual(initialState.state.astring);
     });
@@ -493,32 +494,32 @@ describe('ngrxLocalStorage', () => {
             feature1: { slice11: false, slice12: [], slice13: {} },
             feature2: { slice21: false, slice22: [], slice23: {} },
           };
-  
+
           // A legit case where state is saved in chunks rather than as a single object
           localStorage.setItem('feature1', JSON.stringify({ slice11: true, slice12: [1, 2] }));
           localStorage.setItem('feature2', JSON.stringify({ slice21: true, slice22: [1, 2] }));
-  
+
           // Set up reducers
           const reducer = (state = initialState, action) => state;
           const mergeReducer = (state, rehydratedState, action) => {
             // Perform a merge where we only want a single property from feature1
             // but a deepmerge with feature2
 
-            return {                
+            return {
                 ...state,
                 feature1: {
                     slice11: rehydratedState.feature1.slice11
                 },
                 feature2: deepmerge(state.feature2, rehydratedState.feature2)
-            }
-          }
+            };
+          };
           const metaReducer = localStorageSync({keys: [
             {'feature1': ['slice11', 'slice12']},
             {'feature2': ['slice21', 'slice22']},
           ], rehydrate: true, mergeReducer});
-  
+
           const action = {type: INIT_ACTION};
-  
+
           // Resultant state should merge the rehydrated partial state and our initial state
           const finalState = metaReducer(reducer)(initialState, action);
           expect(finalState).toEqual({
@@ -526,5 +527,39 @@ describe('ngrxLocalStorage', () => {
             feature1: { slice11: true },
             feature2: { slice21: true, slice22: [1, 2], slice23: {} },
           });
-    });    
+    });
+
+    it('should have same reference after rehydrate', () => {
+        const myInitialState = {
+            app: t1,
+            feature3: { hello: 'World' },
+            feature4: { slice21: false, slice22: [], slice23: {} },
+        };
+        const feature3LocalStorage = { hello: 'Peter' };
+
+        localStorage.setItem('feature3', JSON.stringify(feature3LocalStorage));
+
+        // Set up reducers
+        const reducer = (state = myInitialState, action) => state;
+        const metaReducer = localStorageSync({keys: ['feature3', 'feature4'], rehydrate: true});
+
+        const action = {type: UPDATE_ACTION};
+
+        // Resultant state should merge the rehydrated partial state and our initial state
+        const finalState = metaReducer(reducer)(myInitialState, action);
+
+        // Global state should not have same reference
+        expect(myInitialState).not.toBe(finalState);
+
+        // App state should have the same with same reference
+        expect(myInitialState.app).toBe(finalState.app);
+
+        // Feature3 state should not have same reference
+        expect(myInitialState.feature3).not.toBe(finalState.feature3);
+        // Feature3 state should have localStorage value
+        expect(finalState.feature3).toEqual(feature3LocalStorage);
+
+        // Feature4 state should be the same with same reference
+        expect(myInitialState.feature4).toBe(finalState.feature4);
+    });
 });
