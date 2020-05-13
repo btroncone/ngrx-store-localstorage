@@ -273,7 +273,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (
 
     // If state arrives undefined, we need to let it through the supplied reducer
     // in order to get a complete state as defined by user
-    if ((action.type === INIT_ACTION) && !state) {
+    if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && !state) {
       nextState = reducer(state, action);
     } else {
       nextState = { ...state };
