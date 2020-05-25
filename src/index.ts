@@ -1,7 +1,8 @@
 import * as deepmerge from 'deepmerge';
+import { INIT, UPDATE } from '@ngrx/store';
 
-const INIT_ACTION = '@ngrx/store/init';
-const UPDATE_ACTION = '@ngrx/store/update-reducers';
+const INIT_ACTION = INIT;
+const UPDATE_ACTION = UPDATE;
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
 
 // correctly parse dates from local storage
