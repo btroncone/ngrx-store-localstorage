@@ -98,4 +98,3 @@ Usage: `localStorageSync({keys: ['todos', 'visibilityFilter'], storageKeySeriali
 ## Release Notes / Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes (though it is missing a couple of versions).
-
