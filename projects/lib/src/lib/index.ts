@@ -42,7 +42,8 @@ export const rehydrateApplicationState = (
     keys: Keys,
     storage: Storage,
     storageKeySerializer: (key: string) => string,
-    restoreDates: boolean
+    restoreDates: boolean,
+    forFeature: boolean
 ) => {
     return (keys as any[]).reduce((acc, curr) => {
         let key = curr;
@@ -93,8 +94,10 @@ export const rehydrateApplicationState = (
                     raw = JSON.parse(stateSlice, reviver);
                 }
 
-                return Object.assign({}, acc, {
-                    [key]: deserialize ? deserialize(raw) : raw,
+                const rehydratedState = deserialize ? deserialize(raw) : raw;
+
+                return forFeature ? rehydratedState : Object.assign({}, acc, {
+                    [key]: rehydratedState,
                 });
             }
         }
@@ -132,7 +135,8 @@ export const syncStateUpdate = (
     storage: Storage,
     storageKeySerializer: (key: string | number) => string,
     removeOnUndefined: boolean,
-    syncCondition?: (state: any) => any
+    syncCondition?: (state: any) => any,
+    forFeature?: boolean
 ) => {
     if (syncCondition) {
         try {
@@ -149,14 +153,14 @@ export const syncStateUpdate = (
     }
 
     keys.forEach((key: string | KeyConfiguration | Options | ((key: string, value: any) => any)): void => {
-        let stateSlice = state[key as string];
+        let stateSlice = state?.[key as string];
         let replacer;
         let space: string | number;
         let encrypt;
 
         if (typeof key === 'object') {
             let name = Object.keys(key)[0];
-            stateSlice = state[name];
+            stateSlice = forFeature ? state : state[name];
 
             if (typeof stateSlice !== 'undefined' && key[name]) {
                 // use serialize function if specified.
@@ -188,14 +192,16 @@ export const syncStateUpdate = (
                 }
 
                 /*
-          Replacer and space arguments to pass to JSON.stringify.
-          If these fields don't exist, undefined will be passed.
-        */
+                    Replacer and space arguments to pass to JSON.stringify.
+                    If these fields don't exist, undefined will be passed.
+                */
                 replacer = key[name].replacer;
                 space = key[name].space;
             }
 
             key = name;
+        } else if (typeof key === 'string') {
+            stateSlice = forFeature ? state : state[key];
         }
 
         if (typeof stateSlice !== 'undefined' && storage !== undefined) {
@@ -262,7 +268,7 @@ export const localStorageSync = (config: LocalStorageConfig) => (reducer: any) =
 
     const stateKeys = validateStateKeys(config.keys);
     const rehydratedState = config.rehydrate
-        ? rehydrateApplicationState(stateKeys, config.storage, config.storageKeySerializer, config.restoreDates)
+        ? rehydrateApplicationState(stateKeys, config.storage, config.storageKeySerializer, config.restoreDates, config.forFeature)
         : undefined;
 
     return function (state: any, action: any) {
@@ -289,7 +295,8 @@ export const localStorageSync = (config: LocalStorageConfig) => (reducer: any) =
                 config.storage,
                 config.storageKeySerializer as (key: string | number) => string,
                 config.removeOnUndefined,
-                config.syncCondition
+                config.syncCondition,
+                config.forFeature
             );
         }
 
@@ -307,6 +314,7 @@ export interface LocalStorageConfig {
     syncCondition?: (state: any) => any;
     checkStorageAvailability?: boolean;
     mergeReducer?: (state: any, rehydratedState: any, action: any) => any;
+    forFeature?: boolean;
 }
 
 interface KeyConfiguration {
