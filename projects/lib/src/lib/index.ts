@@ -1,4 +1,4 @@
-import deepmerge from 'deepmerge';
+import merge from 'ts-deepmerge';
 
 // Cannot import from the @ngrx/store package due to a module resolution issue.
 // See Issue #206.
@@ -227,11 +227,11 @@ export const syncStateUpdate = (
 export const defaultMergeReducer = (state: any, rehydratedState: any, action: any) => {
     if ((action.type === INIT_ACTION || action.type === UPDATE_ACTION) && rehydratedState) {
         const overwriteMerge = (destinationArray: any, sourceArray: any, options: any) => sourceArray;
-        const options: deepmerge.Options = {
-            arrayMerge: overwriteMerge,
+        const options = {
+            mergeArrays: overwriteMerge,
         };
 
-        state = deepmerge(state, rehydratedState, options);
+        state = merge(state, rehydratedState, options);
     }
 
     return state;
