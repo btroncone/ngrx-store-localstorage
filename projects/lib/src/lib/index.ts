@@ -1,4 +1,4 @@
-import deepmerge from 'deepmerge';
+import deepmerge from '@bundled-es-modules/deepmerge';
 
 // Cannot import from the @ngrx/store package due to a module resolution issue.
 // See Issue #206.
