@@ -1,7 +1,7 @@
 declare var it, describe, expect;
 require('es6-shim');
 import * as CryptoJS from 'crypto-js';
-import deepmerge from 'deepmerge';
+import deepmerge from '@bundled-es-modules/deepmerge';
 import 'localstorage-polyfill';
 import { dateReviver, localStorageSync, rehydrateApplicationState, syncStateUpdate } from '../projects/lib/src/public_api';
 
