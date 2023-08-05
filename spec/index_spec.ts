@@ -1,7 +1,7 @@
 declare var it, describe, expect;
 require('es6-shim');
 import * as CryptoJS from 'crypto-js';
-import deepmerge from 'deepmerge';
+import merge from 'ts-deepmerge';
 import 'localstorage-polyfill';
 import { dateReviver, localStorageSync, rehydrateApplicationState, syncStateUpdate } from '../projects/lib/src/public_api';
 
@@ -525,14 +525,18 @@ describe('ngrxLocalStorage', () => {
         const reducer = (state = initialState, action) => state;
         const mergeReducer = (state, rehydratedState, action) => {
             // Perform a merge where we only want a single property from feature1
-            // but a deepmerge with feature2
-
+            // but a merge with feature2
+            const options = {
+                allowUndefinedOverrides: false,
+                mergeArrays: true,
+                uniqueArrayItems: false
+            };
             return {
                 ...state,
                 feature1: {
                     slice11: rehydratedState.feature1.slice11,
                 },
-                feature2: deepmerge(state.feature2, rehydratedState.feature2),
+                feature2: merge.withOptions(options, rehydratedState.feature2, state.feature2),
             };
         };
         const metaReducer = localStorageSync({
