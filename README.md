@@ -2,7 +2,7 @@
 
 ![bundle size](https://img.shields.io/bundlephobia/minzip/ngrx-store-localstorage)
 ![npm weekly downloads](https://img.shields.io/npm/dw/ngrx-store-localstorage)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release) 
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![CircleCI](https://circleci.com/gh/btroncone/ngrx-store-localstorage.svg?style=svg)](https://circleci.com/gh/btroncone/ngrx-store-localstorage)
 
 Simple syncing between ngrx store and local or session storage.
@@ -45,6 +45,33 @@ const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
   ]
 })
 export class MyAppModule {}
+```
+
+3. For feature modules, enable the `forFeature` flag
+
+```ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { StoreModule, ActionReducerMap, ActionReducer, MetaReducer } from '@ngrx/store';
+import { localStorageSync } from 'ngrx-store-localstorage';
+import { featureReducer } from './reducer';
+
+export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
+  return localStorageSync({keys: ['todos'], forFeature: true})(reducer);
+}
+const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    StoreModule.forFeature(
+        'feature',
+        featureReducer,
+        {metaReducers}
+    )
+  ]
+})
+export class MyFeatureModule {}
 ```
 
 ## API
@@ -97,6 +124,7 @@ An interface defining the configuration attributes to bootstrap `localStorageSyn
 * `syncCondition` (optional) `(state) => boolean`: When set, sync to storage medium will only occur when this function returns a true boolean. Example: `(state) => state.config.syncToStorage` will check the state tree under config.syncToStorage and if true, it will sync to the storage. If undefined or false it will not sync to storage. Often useful for "remember me" options in login.
 * `checkStorageAvailability` \(*boolean? = false*): Specify if the storage availability checking is expected, i.e. for server side rendering / Universal.
 * `mergeReducer` (optional) `(state: any, rehydratedState: any, action: any) => any`: Defines the reducer to use to merge the rehydrated state from storage with the state from the ngrx store. If unspecified, defaults to performing a full deepmerge on an `INIT_ACTION` or an `UPDATE_ACTION`.
+* `forFeature` \(*boolean? = false*): Specify if the storage sync should be performed for a feature store.
 
 ### Usage
 
@@ -104,10 +132,10 @@ An interface defining the configuration attributes to bootstrap `localStorageSyn
 
 ```ts
 localStorageSync({
-  keys: ['todos', 'visibilityFilter'], 
-  storageKeySerializer: (key) => `cool_${key}`, 
+  keys: ['todos', 'visibilityFilter'],
+  storageKeySerializer: (key) => `cool_${key}`,
 });
-``` 
+```
 In above example `Storage` will use keys `cool_todos` and `cool_visibilityFilter` keys to store `todos` and `visibilityFilter` slices of state). The key itself is used by default - `(key) => key`.
 
 #### Target Depth Configuration
@@ -115,7 +143,7 @@ In above example `Storage` will use keys `cool_todos` and `cool_visibilityFilter
 ```ts
 localStorageSync({
   keys: [
-      { feature1: [{ slice11: ['slice11_1'], slice14: ['slice14_2'] }] }, 
+      { feature1: [{ slice11: ['slice11_1'], slice14: ['slice14_2'] }] },
       { feature2: ['slice21'] }
   ],
 });
