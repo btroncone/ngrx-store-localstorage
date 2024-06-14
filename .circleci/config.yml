@@ -6,7 +6,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: cimg/node:18.16.0
+    - image: cimg/node:20.14.0
 
 jobs:
   install-lint-build-test:

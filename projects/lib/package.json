@@ -1,6 +1,6 @@
 {
     "name": "ngrx-store-localstorage",
-    "version": "17.0.0",
+    "version": "18.0.0",
     "description": "State and local storage syncing for @ngrx/store",
     "repository": {
         "type": "git",
@@ -20,9 +20,9 @@
     "homepage": "https://github.com/btroncone/ngrx-store-localstorage#readme",
     "license": "MIT",
     "peerDependencies": {
-        "@angular/common": "^17.0.4",
-        "@angular/core": "^17.0.4",
-        "@ngrx/store": "^17.0.0"
+        "@angular/common": "^18.0.1",
+        "@angular/core": "^18.0.1",
+        "@ngrx/store": "^18.0.0"
     },
     "dependencies": {
         "deepmerge": "^4.2.2",
