@@ -8,7 +8,7 @@
         "lint": "ng lint --fix",
         "ng": "ng",
         "pretest": "npm run lint",
-        "test": "nyc ts-node -O '{\"module\": \"commonjs\"}' node_modules/jasmine/bin/jasmine",
+        "test": "nyc ts-node --compiler-options {\\\"module\\\":\\\"commonjs\\\"} node_modules/jasmine/bin/jasmine",
         "prepare": "husky install",
         "copy_lib_assets": "copyfiles README.md CHANGELOG.md LICENSE ./dist/lib/"
     },
@@ -23,6 +23,7 @@
         "@angular/router": "^19.0.5",
         "@ngrx/store": "^19.0.0",
         "deepmerge": "^4.2.2",
+        "ngrx-store-localstorage": "file:projects/lib",
         "rxjs": "~7.8.1",
         "tslib": "^2.6.2",
         "zone.js": "~0.15.0"

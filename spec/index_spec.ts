@@ -3,7 +3,12 @@ require('es6-shim');
 import * as CryptoJS from 'crypto-js';
 import deepmerge from 'deepmerge';
 import 'localstorage-polyfill';
-import { dateReviver, localStorageSync, rehydrateApplicationState, syncStateUpdate } from '../projects/lib/src/public_api';
+import {
+    dateReviver,
+    localStorageSync,
+    rehydrateApplicationState,
+    syncStateUpdate,
+} from '../projects/lib/src/public_api';
 
 const INIT_ACTION = '@ngrx/store/init';
 
@@ -205,10 +210,10 @@ describe('ngrxLocalStorage', () => {
         );
 
         const raw1 = s.getItem('feature1');
-        expect(raw1).toEqual(JSON.stringify({"slice11":true,"slice12":[1,2]}));
+        expect(raw1).toEqual(JSON.stringify({ slice11: true, slice12: [1, 2] }));
 
         const raw2 = s.getItem('feature2');
-        expect(raw2).toEqual(JSON.stringify({"slice21":true,"slice22":[1,2]}));
+        expect(raw2).toEqual(JSON.stringify({ slice21: true, slice22: [1, 2] }));
     });
 
     it('reviver', () => {
@@ -622,5 +627,58 @@ describe('ngrxLocalStorage', () => {
             slice21: 'third_good_value',
             slice22: 'fourth_good_value',
         });
+    });
+    it('should allow various valid date formats when parsing string', () => {
+        // given
+        const sampleDateTimes = [
+            '2025/04/15', // yyyy/mm/dd
+            '2025-04-15', // yyyy-mm-dd (ISO 8601)
+            '12/04/2025', // dd/mm/yyyy
+            '12-04-2025', // dd-mm-yyyy
+            '04/15/2025', // mm/dd/yyyy (US)
+            '04-15-2025', // mm-dd-yyyy (US)
+            'Apr 15, 2025', // short month format
+            '15 Apr 2025', // day short month year
+            'April 15, 2025', // full month format
+            '15 April 2025', // day full month year
+            '2025.04.15', // dot-separated
+            '2025-Apr-15', // ISO variation
+            '2025-April-15', // verbose ISO
+            'Tuesday, April 15, 2025', // full day name
+            'Tue, 15 Apr 2025', // RFC 2822 format
+            '2025-04-12T00:00:00', // ISO with time
+            '2025-04-12T00:00:00Z', // ISO UTC
+            '2025-04-12T00:00:00+02:00', // ISO with timezone
+        ];
+
+        // then
+        sampleDateTimes.forEach(date => expect(dateReviver(null, date)).toEqual(new Date(date)));
+    });
+    it('should disallow various invalid date formats when parsing string', () => {
+        // given
+        const sampleDateTimes = [
+            '2025fdsa/04/15', // yyyy/mm/dd
+            '2025fdsa-04-15', // yyyy-mm-dd (ISO 8601)
+            '12fdsa/04/2025', // dd/mm/yyyy
+            '12fdsa-04-2025', // dd-mm-yyyy
+            '04fdsa/15/2025', // mm/dd/yyyy (US)
+            '04fdsa-15-2025', // mm-dd-yyyy (US)
+            'Apr fdsa15, 2025', // short month format
+            '15 Apr fdsa2025', // day short month year
+            'April fdsa15, 2025', // full month format
+            '15 April fdsa2025', // day full month year
+            '2025.fdsa04.15', // dot-separated
+            '2025-Apr-1fdsa5', // ISO variation
+            '2025-Afdsailpr-15', // verbose ISO
+            'Tuesday, fdsaApril 15, 2025', // full day name
+            'Tue, 15 Apr fdsa2025', // RFC 2822 format
+            '2025-04-12Tfdsa00:00:00', // ISO with time
+            '2025-04-12Tfdsa00:00:00Z', // ISO UTC
+            '2025-04-fdsa12T00:00:00+02:00', // ISO with timezone
+            '{ "nestedDate": "2025-04-12T00:00:00Z" }' // nested json date
+        ];
+
+        // then
+        sampleDateTimes.forEach(date => expect(dateReviver(null, date)).toEqual(date));
     });
 });
