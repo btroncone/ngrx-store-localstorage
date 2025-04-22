@@ -32,9 +32,11 @@ jobs:
           name: Lint commit message
           command: echo "$COMMIT_MESSAGE" | npx commitlint
 
+      - run: npm run lint
+
       - run: npm run build_dist
 
-      - run: npm test
+      - run: npm run test
 
       - save_cache:
           paths:

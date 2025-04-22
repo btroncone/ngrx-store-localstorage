@@ -11,10 +11,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "lib": [
-        "dist/lib/lib",
-        "dist/lib"
-      ]
+      "lib": ["dist/lib/lib", "dist/lib"]
     },
     "sourceMap": true,
     "declaration": false,
@@ -24,10 +21,7 @@
     "importHelpers": true,
     "target": "es2020",
     "module": "es2020",
-    "lib": [
-      "es2018",
-      "dom"
-    ]
+    "lib": ["es2018", "dom"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

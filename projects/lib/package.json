@@ -1,31 +1,31 @@
 {
-    "name": "ngrx-store-localstorage",
-    "version": "19.0.0",
-    "description": "State and local storage syncing for @ngrx/store",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:btroncone/ngrx-store-localstorage.git"
-    },
-    "keywords": [
-        "redux",
-        "ngrx",
-        "store",
-        "localstorage",
-        "rxjs"
-    ],
-    "author": "Brian Troncone",
-    "bugs": {
-        "url": "https://github.com/btroncone/ngrx-store-localstorage/issues"
-    },
-    "homepage": "https://github.com/btroncone/ngrx-store-localstorage#readme",
-    "license": "MIT",
-    "peerDependencies": {
-        "@angular/common": "^19.0.5",
-        "@angular/core": "^19.0.5",
-        "@ngrx/store": "^19.0.0"
-    },
-    "dependencies": {
-        "deepmerge": "^4.2.2",
-        "tslib": "^2.3.0"
-    }
+  "name": "ngrx-store-localstorage",
+  "version": "19.0.0",
+  "description": "State and local storage syncing for @ngrx/store",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:btroncone/ngrx-store-localstorage.git"
+  },
+  "keywords": [
+    "redux",
+    "ngrx",
+    "store",
+    "localstorage",
+    "rxjs"
+  ],
+  "author": "Brian Troncone",
+  "bugs": {
+    "url": "https://github.com/btroncone/ngrx-store-localstorage/issues"
+  },
+  "homepage": "https://github.com/btroncone/ngrx-store-localstorage#readme",
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/common": "^19.0.5",
+    "@angular/core": "^19.0.5",
+    "@ngrx/store": "^19.0.0"
+  },
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "tslib": "^2.3.0"
+  }
 }
