@@ -104,7 +104,7 @@ class MockStorage implements Storage {
 const storageKeySerializer = (key) => key;
 
 describe("ngrxLocalStorage", () => {
-  let t1 = new TypeA(
+  const t1 = new TypeA(
     "Testing",
     3.14159,
     true,
@@ -112,9 +112,9 @@ describe("ngrxLocalStorage", () => {
     new TypeB("Nested Class"),
   );
 
-  let t1Json = JSON.stringify(t1);
+  const t1Json = JSON.stringify(t1);
 
-  let t1Filtered = new TypeA(
+  const t1Filtered = new TypeA(
     "Testing",
     undefined,
     undefined,
@@ -122,18 +122,9 @@ describe("ngrxLocalStorage", () => {
     new TypeB("Nested Class"),
   );
 
-  let t1Simple = {
-    astring: "Testing",
-    adate: "1968-11-16T12:30:00.000Z",
-    anumber: 3.14159,
-    aboolean: true,
-  };
+  const initialState = { state: t1 };
 
-  let initialState = { state: t1 };
-
-  let initialStateJson = JSON.stringify(initialState);
-
-  let undefinedState = { state: undefined };
+  const initialStateJson = JSON.stringify(initialState);
 
   let storage;
 
@@ -467,6 +458,7 @@ describe("ngrxLocalStorage", () => {
 
   it("removeOnUndefined", () => {
     // This tests that the state slice is removed when the state it's undefined
+    const undefinedState = { state: undefined };
 
     syncStateUpdate({
       state: initialState,
@@ -494,6 +486,7 @@ describe("ngrxLocalStorage", () => {
 
   it("keepOnUndefined", () => {
     // This tests that the state slice is keeped when the state it's undefined
+    const undefinedState = { state: undefined };
 
     syncStateUpdate({
       state: initialState,
@@ -522,6 +515,12 @@ describe("ngrxLocalStorage", () => {
   it("not restoreDates", () => {
     // Tests that dates are not revived when the flag is set to false
 
+    const t1Simple = {
+      astring: "Testing",
+      adate: "1968-11-16T12:30:00.000Z",
+      anumber: 3.14159,
+      aboolean: true,
+    };
     const initalState = { state: t1Simple };
 
     syncStateUpdate({
@@ -555,7 +554,7 @@ describe("ngrxLocalStorage", () => {
       storageKeySerializer,
       removeOnUndefined: false,
     });
-    // Decript stored value and compare with the on-memory state
+    // Decrypt stored value and compare with the on-memory state
     let raw = storage.getItem("state");
     expect(TypeC.decrypt(raw)).toEqual(JSON.stringify(initialState.state));
 
@@ -581,11 +580,11 @@ describe("ngrxLocalStorage", () => {
       storageKeySerializer,
       removeOnUndefined: false,
     });
-    // Stored value must not be encripted due to decrypt function is not present, so must be equal to the on-memory state
+    // Stored value must not be encrypted due to decrypt function is not present, so must be equal to the on-memory state
     let raw = storage.getItem("state");
     expect(raw).toEqual(JSON.stringify(initialState.state));
 
-    // Stored value must not be encripted, if one of the encryption functions are not present
+    // Stored value must not be encrypted, if one of the encryption functions are not present
     keys = [{ state: { decrypt: TypeC.decrypt } }];
     syncStateUpdate({
       state: initialState,
@@ -876,61 +875,65 @@ describe("ngrxLocalStorage", () => {
       slice22: "fourth_good_value",
     });
   });
-  it("should allow various valid date formats when parsing string", () => {
-    // given
-    const sampleDateTimes = [
-      "2025/04/15", // yyyy/mm/dd
-      "2025-04-15", // yyyy-mm-dd (ISO 8601)
-      "12/04/2025", // dd/mm/yyyy
-      "12-04-2025", // dd-mm-yyyy
-      "04/15/2025", // mm/dd/yyyy (US)
-      "04-15-2025", // mm-dd-yyyy (US)
-      "Apr 15, 2025", // short month format
-      "15 Apr 2025", // day short month year
-      "April 15, 2025", // full month format
-      "15 April 2025", // day full month year
-      "2025.04.15", // dot-separated
-      "2025-Apr-15", // ISO variation
-      "2025-April-15", // verbose ISO
-      "Tuesday, April 15, 2025", // full day name
-      "Tue, 15 Apr 2025", // RFC 2822 format
-      "2025-04-12T00:00:00", // ISO with time
-      "2025-04-12T00:00:00Z", // ISO UTC
-      "2025-04-12T00:00:00+02:00", // ISO with timezone
-    ];
 
-    // then
-    sampleDateTimes.forEach((date) =>
-      expect(dateReviver(null, date)).toEqual(new Date(date)),
-    );
-  });
-  it("should disallow various invalid date formats when parsing string", () => {
-    // given
-    const sampleDateTimes = [
-      "2025fdsa/04/15", // yyyy/mm/dd
-      "2025fdsa-04-15", // yyyy-mm-dd (ISO 8601)
-      "12fdsa/04/2025", // dd/mm/yyyy
-      "12fdsa-04-2025", // dd-mm-yyyy
-      "04fdsa/15/2025", // mm/dd/yyyy (US)
-      "04fdsa-15-2025", // mm-dd-yyyy (US)
-      "Apr fdsa15, 2025", // short month format
-      "15 Apr fdsa2025", // day short month year
-      "April fdsa15, 2025", // full month format
-      "15 April fdsa2025", // day full month year
-      "2025.fdsa04.15", // dot-separated
-      "2025-Apr-1fdsa5", // ISO variation
-      "2025-Afdsailpr-15", // verbose ISO
-      "Tuesday, fdsaApril 15, 2025", // full day name
-      "Tue, 15 Apr fdsa2025", // RFC 2822 format
-      "2025-04-12Tfdsa00:00:00", // ISO with time
-      "2025-04-12Tfdsa00:00:00Z", // ISO UTC
-      "2025-04-fdsa12T00:00:00+02:00", // ISO with timezone
-      '{ "nestedDate": "2025-04-12T00:00:00Z" }', // nested json date
-    ];
+  describe("dateReviver", () => {
+    it("should allow various valid date formats when parsing string", () => {
+      // given
+      const sampleDateTimes = [
+        "2025/04/15", // yyyy/mm/dd
+        "2025-04-15", // yyyy-mm-dd (ISO 8601)
+        "12/04/2025", // dd/mm/yyyy
+        "12-04-2025", // dd-mm-yyyy
+        "04/15/2025", // mm/dd/yyyy (US)
+        "04-15-2025", // mm-dd-yyyy (US)
+        "Apr 15, 2025", // short month format
+        "15 Apr 2025", // day short month year
+        "April 15, 2025", // full month format
+        "15 April 2025", // day full month year
+        "2025.04.15", // dot-separated
+        "2025-Apr-15", // ISO variation
+        "2025-April-15", // verbose ISO
+        "Tuesday, April 15, 2025", // full day name
+        "Tue, 15 Apr 2025", // RFC 2822 format
+        "2025-04-12T00:00:00", // ISO with time
+        "2025-04-12T00:00:00Z", // ISO UTC
+        "2025-04-12T00:00:00+02:00", // ISO with timezone
+      ];
 
-    // then
-    sampleDateTimes.forEach((date) =>
-      expect(dateReviver(null, date)).toEqual(date),
-    );
+      // then
+      sampleDateTimes.forEach((date) =>
+        expect(dateReviver(null, date)).toEqual(new Date(date)),
+      );
+    });
+
+    it("should disallow various invalid date formats when parsing string", () => {
+      // given
+      const sampleDateTimes = [
+        "2025fdsa/04/15", // yyyy/mm/dd
+        "2025fdsa-04-15", // yyyy-mm-dd (ISO 8601)
+        "12fdsa/04/2025", // dd/mm/yyyy
+        "12fdsa-04-2025", // dd-mm-yyyy
+        "04fdsa/15/2025", // mm/dd/yyyy (US)
+        "04fdsa-15-2025", // mm-dd-yyyy (US)
+        "Apr fdsa15, 2025", // short month format
+        "15 Apr fdsa2025", // day short month year
+        "April fdsa15, 2025", // full month format
+        "15 April fdsa2025", // day full month year
+        "2025.fdsa04.15", // dot-separated
+        "2025-Apr-1fdsa5", // ISO variation
+        "2025-Afdsailpr-15", // verbose ISO
+        "Tuesday, fdsaApril 15, 2025", // full day name
+        "Tue, 15 Apr fdsa2025", // RFC 2822 format
+        "2025-04-12Tfdsa00:00:00", // ISO with time
+        "2025-04-12Tfdsa00:00:00Z", // ISO UTC
+        "2025-04-fdsa12T00:00:00+02:00", // ISO with timezone
+        '{ "nestedDate": "2025-04-12T00:00:00Z" }', // nested json date
+      ];
+
+      // then
+      sampleDateTimes.forEach((date) =>
+        expect(dateReviver(null, date)).toEqual(date),
+      );
+    });
   });
 });
