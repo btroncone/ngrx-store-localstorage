@@ -47,12 +47,17 @@ const validateStateKeys = (keys: Keys) => {
   });
 };
 
-export const rehydrateApplicationState = (
-  keys: Keys,
-  storage: Storage,
-  storageKeySerializer: (key: string) => string,
-  restoreDates: boolean,
-) => {
+export const rehydrateApplicationState = ({
+  keys,
+  storage,
+  storageKeySerializer,
+  restoreDates,
+}: {
+  keys: Keys;
+  storage: Storage;
+  storageKeySerializer: (key: string) => string;
+  restoreDates: boolean;
+}) => {
   return (keys as any[]).reduce((acc, curr) => {
     let key = curr;
     let reviver = restoreDates ? dateReviver : dummyReviver;
@@ -153,14 +158,21 @@ function createStateSlice(
   );
 }
 
-export const syncStateUpdate = (
-  state: any,
-  keys: Keys,
-  storage: Storage,
-  storageKeySerializer: (key: string | number) => string,
-  removeOnUndefined: boolean,
-  syncCondition?: (state: any) => any,
-) => {
+export const syncStateUpdate = ({
+  state,
+  keys,
+  storage,
+  storageKeySerializer,
+  removeOnUndefined,
+  syncCondition,
+}: {
+  state: any;
+  keys: Keys;
+  storage: Storage;
+  storageKeySerializer: (key: string) => string;
+  removeOnUndefined: boolean;
+  syncCondition?: (state: any) => any;
+}) => {
   if (syncCondition) {
     try {
       if (syncCondition(state) !== true) {
@@ -318,14 +330,15 @@ export const localStorageSync =
       mergeReducer = defaultMergeReducer;
     }
 
-    const stateKeys = validateStateKeys(config.keys);
+    const keys = validateStateKeys(config.keys);
+    const { storage, storageKeySerializer, restoreDates } = config;
     const rehydratedState = config.rehydrate
-      ? rehydrateApplicationState(
-          stateKeys,
-          config.storage,
-          config.storageKeySerializer,
-          config.restoreDates,
-        )
+      ? rehydrateApplicationState({
+          keys,
+          storage,
+          storageKeySerializer,
+          restoreDates,
+        })
       : undefined;
 
     return function (state: any, action: any) {
@@ -346,14 +359,21 @@ export const localStorageSync =
       nextState = reducer(nextState, action);
 
       if (action.type !== INIT_ACTION) {
-        syncStateUpdate(
-          nextState,
-          stateKeys,
-          config.storage,
-          config.storageKeySerializer as (key: string | number) => string,
-          config.removeOnUndefined,
-          config.syncCondition,
-        );
+        const {
+          storage,
+          storageKeySerializer,
+          removeOnUndefined,
+          syncCondition,
+        } = config;
+
+        syncStateUpdate({
+          state: nextState,
+          keys,
+          storage,
+          storageKeySerializer,
+          removeOnUndefined,
+          syncCondition,
+        });
       }
 
       return nextState;
