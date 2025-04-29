@@ -30,7 +30,7 @@ import {
   MetaReducer,
 } from "@ngrx/store";
 import { localStorageSync } from "ngrx-store-localstorage";
-import { reducers } from "./reducers";
+import { todos, visibilityFilter } from "./reducers";
 
 const reducers: ActionReducerMap<IState> = { todos, visibilityFilter };
 
