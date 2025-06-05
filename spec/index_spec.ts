@@ -708,7 +708,8 @@ describe("ngrxLocalStorage", () => {
       slice22: "fourth_good_value",
     });
   });
-  it("should allow various valid date formats when parsing string", () => {
+
+  it("should revive valid date time formats from local storage into dates", () => {
     // given
     const sampleDateTimes = [
       "2025/04/15", // yyyy/mm/dd
@@ -730,15 +731,45 @@ describe("ngrxLocalStorage", () => {
       "2025-04-12T00:00:00Z", // ISO UTC
       "2025-04-12T00:00:00+02:00", // ISO with timezone
     ];
+    const problematicStrings = [
+      "February 29, 2025", // valid format, while reviving would change meaning, since no leap year
+      "  12 12-,    13'", // "arbitrary" string with spaces, dashes, quotes and commas
+    ];
 
     // then
     sampleDateTimes.forEach((date) =>
       expect(dateReviver(null, date)).toEqual(new Date(date)),
     );
+    // BUG: should not revive invalid date
+    problematicStrings.forEach((invalidData) =>
+      expect(dateReviver(null, invalidData)).not.toEqual(invalidData),
+    );
   });
-  it("should disallow various invalid date formats when parsing string", () => {
+
+  it("should not revive non-date time strings from local storage into improper dates", () => {
     // given
-    const sampleDateTimes = [
+    const sampleNonDateTimes = [
+      "-1", // negative number
+      "-1.0", // negative float
+      "-1.0e-10", // negative scientific notation
+      "-1.0e+10", // negative scientific notation with positive exponent
+      "1.", // positive number with trailing dot
+      "-1/2", // negative fraction (numerator)
+      "1/-2", // negative fraction (denominator)
+      "-1/-2", // negative fraction (numerator and denominator)
+      "-/2", // negative fraction with missing numerator
+      "-1.0/-2", // negative fraction (numerator with float)
+      "1.0/-2.0", // negative fraction (denominator with float)
+      "-1.0/-2.0", // negative fraction (numerator and denominator with float)
+      "0", // zero
+      "1", // positive number
+      "1.0", // positive float
+      "1.0e-10", // positive scientific notation
+      "1.0e+10", // positive scientific notation with positive exponent
+      "-1.", // negative number with trailing dot
+      "1/2", // positive fraction
+      "/2", // positive fraction with missing numerator
+      "", // empty string
       "2025fdsa/04/15", // yyyy/mm/dd
       "2025fdsa-04-15", // yyyy-mm-dd (ISO 8601)
       "12fdsa/04/2025", // dd/mm/yyyy
@@ -758,11 +789,13 @@ describe("ngrxLocalStorage", () => {
       "2025-04-12Tfdsa00:00:00Z", // ISO UTC
       "2025-04-fdsa12T00:00:00+02:00", // ISO with timezone
       '{ "nestedDate": "2025-04-12T00:00:00Z" }', // nested json date
+      "02 04 05", // ambiguous date format
+      "123456", // number while also accepted by the Date constructor in Chrome
     ];
 
     // then
-    sampleDateTimes.forEach((date) =>
-      expect(dateReviver(null, date)).toEqual(date),
+    sampleNonDateTimes.forEach((string) =>
+      expect(dateReviver(null, string)).toEqual(string),
     );
   });
 });

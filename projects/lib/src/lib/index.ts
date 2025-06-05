@@ -5,7 +5,11 @@ import deepmerge from "deepmerge";
 const INIT_ACTION = "@ngrx/store/init";
 const UPDATE_ACTION = "@ngrx/store/update-reducers";
 
+const detectNumber = /^-?\d*([\.\/]-?\d*)?$/;
 function dateOrDefault(dateString: string): Date | string {
+  if (detectNumber.test(dateString.replace(/\s+/g, ""))) {
+    return dateString;
+  }
   const maybeDate = new Date(dateString);
   if (maybeDate.toString() === "Invalid Date") {
     return dateString;
