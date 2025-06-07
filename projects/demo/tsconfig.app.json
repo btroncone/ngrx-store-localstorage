@@ -8,10 +8,6 @@
     "useDefineForClassFields": false,
     "types": []
   },
-  "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
-    "strictStandalone": true
-  },
   "files": ["src/main.ts"],
   "include": ["src/**/*.d.ts"]
 }
