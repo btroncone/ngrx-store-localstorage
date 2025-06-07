@@ -14,7 +14,10 @@
     "prepare": "husky install",
     "copy_lib_assets": "copyfiles README.md CHANGELOG.md LICENSE ./dist/lib/",
     "start:demo": "ng serve demo",
-    "build:demo": "ng build demo --configuration production"
+    "build:demo": "ng build demo --configuration production",
+    "e2e:demo": "ng e2e demo",
+    "cypress:run": "cypress run --project ./projects/demo",
+    "cypress:open": "cypress open --project ./projects/demo"
   },
   "dependencies": {
     "@angular/animations": "^19.0.5",
@@ -45,6 +48,7 @@
     "@angular/compiler-cli": "^19.0.5",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
+    "@cypress/schematic": "^3.0.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/jasmine": "~3.6.0",
     "@types/node": "^18.16.0",
@@ -52,6 +56,7 @@
     "@typescript-eslint/parser": "^5.59.2",
     "copyfiles": "^2.4.1",
     "crypto-js": "^4.0.0",
+    "cypress": "^14.4.1",
     "es6-shim": "^0.35.6",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^10.1.2",
