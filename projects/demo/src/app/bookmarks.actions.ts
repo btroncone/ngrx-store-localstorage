@@ -6,8 +6,11 @@ export interface Bookmark {
   url: string;
   folder: string;
   tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  // TODO(dates): Investigate serialization of dates
+  //   createdAt: Date;
+  //   updatedAt: Date;
 }
 
 export interface Folder {

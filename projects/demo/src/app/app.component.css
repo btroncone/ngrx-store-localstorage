@@ -20,12 +20,50 @@ main {
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 900px;
+  margin: 32px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   padding: 0 1rem;
   width: 100%;
 }
 
 .card + .card {
   margin-top: 1rem;
+}
+
+mat-card {
+  padding: 16px;
+}
+
+mat-toolbar {
+  margin-bottom: 24px;
+}
+
+.add-bookmark-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.add-bookmark-form mat-form-field {
+  flex: 1 1 200px;
+}
+
+.bookmarks-list {
+  margin-top: 16px;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.bookmark-title {
+  font-weight: 500;
 }

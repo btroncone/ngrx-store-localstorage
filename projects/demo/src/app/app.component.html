@@ -3,13 +3,130 @@
     <span>Bookmarks Manager Demo</span>
   </mat-toolbar>
   <div class="container">
-    <mat-card class="card">
-      <mat-card-content>Add Bookmark</mat-card-content>
-      <!-- Add Bookmark Form Here -->
-    </mat-card>
-    <mat-card class="card">
-      <mat-card-content>Bookmarks</mat-card-content>
-      <!-- Bookmarks List Here -->
+    <!-- <mat-card class="example-card" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Chihuahua</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ longText }}</p>
+      </mat-card-content>
+      <mat-card-footer class="example-card-footer">
+        <mat-chip-set aria-label="Chihuahua traits">
+          <mat-chip>charming</mat-chip>
+          <mat-chip>graceful</mat-chip>
+          <mat-chip>sassy</mat-chip>
+        </mat-chip-set>
+      </mat-card-footer>
+    </mat-card> -->
+    <form
+      class="add-bookmark-form"
+      #bookmarkForm="ngForm"
+      (ngSubmit)="addBookmark()"
+    >
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Add Bookmark</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline">
+            <mat-label>Title</mat-label>
+            <input
+              matInput
+              required
+              name="title"
+              autocomplete="off"
+              autocorrect="off"
+              [(ngModel)]="newBookmark.title"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>URL</mat-label>
+            <input
+              matInput
+              required
+              name="url"
+              autocomplete="off"
+              autocorrect="off"
+              [(ngModel)]="newBookmark.url"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Folder</mat-label>
+            <input
+              matInput
+              name="folder"
+              autocomplete="off"
+              autocorrect="off"
+              [(ngModel)]="newBookmark.folder"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tags (comma separated)</mat-label>
+            <input
+              matInput
+              name="tags"
+              autocomplete="off"
+              autocorrect="off"
+              [(ngModel)]="newBookmark.tags"
+            />
+          </mat-form-field>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button
+            mat-button
+            type="submit"
+            [disabled]="!bookmarkForm.form.valid"
+          >
+            Add
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Bookmarks</mat-card-title>
+        <mat-card-subtitle>In local storage</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="bookmarks-list">
+          @for (bookmark of bookmarks(); track bookmark.id) {
+            <div class="bookmark-item">
+              <div>
+                <span class="bookmark-title">{{ bookmark.title }}</span>
+                <span class="bookmark-title">{{ bookmark.createdAt }}</span>
+                <mat-chip-set aria-label="Chihuahua traits">
+                  @for (tag of bookmark.tags; track $index) {
+                    <mat-chip>{{ tag }}</mat-chip>
+                  }
+                </mat-chip-set>
+                <div>
+                  <a [href]="bookmark.url" target="_blank">{{
+                    bookmark.url
+                  }}</a>
+                </div>
+                @if (bookmark.folder) {
+                  <span class="bookmark-folder"
+                    >Folder: {{ bookmark.folder }}</span
+                  >
+                }
+              </div>
+              <div>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteBookmark(bookmark.id)"
+                  (keyup.enter)="deleteBookmark(bookmark.id)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+      <mat-card-footer>
+        <span>Total Bookmarks: {{ bookmarks().length || 0 }}</span>
+      </mat-card-footer>
     </mat-card>
   </div>
 </main>
