@@ -1,0 +1,42 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use "@angular/material" as mat;
+
+@include mat.typography-hierarchy(
+  mat.define-theme(
+    (
+      typography: (
+        use-system-variables: true,
+        system-variables-prefix: mat-sys,
+      ),
+    )
+  )
+);
+
+:root {
+  color-scheme: light dark;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: Roboto,
+      density: -2,
+    )
+  );
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: darkcyan,
+      container-text-color: cyan,
+    )
+  );
+}
+
+body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}

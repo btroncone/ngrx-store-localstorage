@@ -1,0 +1,31 @@
+/* Styles for the root app component */
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+main {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  box-sizing: inherit;
+  position: relative;
+}
+
+.logo {
+  max-width: 9.2rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.card + .card {
+  margin-top: 1rem;
+}
