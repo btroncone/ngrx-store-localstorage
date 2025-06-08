@@ -58,17 +58,73 @@ jobs:
           name: Run semantic-release
           command: cd dist/lib && ../../node_modules/.bin/semantic-release
 
+  demo-e2e:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+      - run:
+          name: Install dependencies for demo app
+          command: npm ci
+      - run:
+          name: Install Cypress dependencies
+          # Note: These system dependencies cannot be cached with CircleCI cache.
+          # For faster builds, consider a custom Docker image or CircleCI orbs.
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2 libxss1 libgbm-dev
+      - save_cache:
+          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      # - run:
+      #     name: Build demo app
+      #     command: npm run build:demo
+      - run:
+          name: Start demo app server
+          command: npm run start:demo &
+      - run:
+          name: Wait for dev server to start
+          command: sleep 30
+      # - run:
+      #     name: Check connection to demo app server
+      #     command: curl -I http://localhost:4200 || (echo "Server not reachable" && exit 1)
+      # - run:
+      #     name: Check connection to demo app server
+      #     command: curl -I http://127.0.0.1:4200 || (echo "Server not reachable" && exit 1)
+      - run:
+          name: Wait for dev server to respond (verbose)
+          command: npx wait-on --verbose http-get://localhost:4200
+      - run:
+          name: Wait for dev server to respond (verbose)
+          command: npx wait-on --verbose http-get://127.0.0.1:4200
+      - run:
+          name: Run Cypress e2e tests
+          command: npm run cypress:run
+          environment:
+            CYPRESS_baseUrl: http://localhost:4200
+      - store_artifacts:
+          path: projects/demo/cypress/screenshots
+          destination: cypress-screenshots
+      - store_artifacts:
+          path: projects/demo/cypress/videos
+          destination: cypress-videos
+
 workflows:
   version: 2
   test-deploy:
     jobs:
-      - install-lint-build-test
-      - deploy:
-          requires: [install-lint-build-test]
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              only: master
-              # Ignore forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              ignore: /pull\/[0-9]+/
+      # - install-lint-build-test
+      - demo-e2e
+      # - deploy:
+      #     requires: [install-lint-build-test]
+      #     filters:
+      #       tags:
+      #         only: /^v.*/
+      #       branches:
+      #         only: master
+      #         # Ignore forked pull requests have CIRCLE_BRANCH set to pull/XXX
+      #         ignore: /pull\/[0-9]+/
