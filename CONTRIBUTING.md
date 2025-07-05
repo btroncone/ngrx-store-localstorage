@@ -75,7 +75,6 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 9. In GitHub, send a pull request to the `master` branch.
 
    If we ask for changes via code reviews then:
-
    - Make the required updates.
    - Re-run the test suites to ensure tests are still passing.
    - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
