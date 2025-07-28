@@ -22,7 +22,7 @@
   "peerDependencies": {
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0",
-    "@ngrx/store": "^20.0.0-rc.0"
+    "@ngrx/store": "^20.0.0"
   },
   "dependencies": {
     "deepmerge": "^4.2.2",
