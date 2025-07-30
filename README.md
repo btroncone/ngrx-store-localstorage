@@ -62,17 +62,14 @@ Provide state (reducer) keys to sync with local storage. _Returns a meta-reducer
 An interface defining the configuration attributes to bootstrap `localStorageSync`. The following are properties which compose `LocalStorageConfig`:
 
 - `keys` (required) State keys to sync with local storage. The keys can be defined in two different formats:
-
   - `string[]`: Array of strings representing the state (reducer) keys. Full state will be synced (e.g. `localStorageSync({keys: ['todos']})`).
 
   - `object[]`: Array of objects where for each object the key represents the state key and the value represents custom serialize/deserialize options. This can be one of the following:
-
     - An array of properties which should be synced. This allows for the partial state sync (e.g. `localStorageSync({keys: [{todos: ['name', 'status'] }, ... ]})`).
 
     - A reviver function as specified in the [JSON.parse documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
 
     - An object with properties that specify one or more of the following:
-
       - `serialize`: A function that takes a state object and returns a plain json object to pass to json.stringify.
 
       - `deserialize`: A function that takes that takes the raw JSON from JSON.parse and builds a state object.
