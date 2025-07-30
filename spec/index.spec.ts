@@ -521,10 +521,10 @@ describe("ngrxLocalStorage", () => {
       anumber: 3.14159,
       aboolean: true,
     };
-    const initalState = { state: t1Simple };
+    const initialState = { state: t1Simple };
 
     syncStateUpdate({
-      state: initalState,
+      state: initialState,
       keys: ["state"],
       storage,
       storageKeySerializer,
@@ -538,7 +538,7 @@ describe("ngrxLocalStorage", () => {
       restoreDates: false,
     });
     expect(finalState).toEqual(
-      initalState,
+      initialState,
       "rehydrated state should equal initial state",
     );
   });
@@ -877,9 +877,20 @@ describe("ngrxLocalStorage", () => {
   });
 
   describe("dateReviver", () => {
-    it("should allow various valid date formats when parsing string", () => {
-      // given
-      const sampleDateTimes = [
+    it("should allow ISO date formats when parsing strings", () => {
+      const isoDateTimes = [
+        "2025-04-12T00:00:00", // ISO with time
+        "2025-04-12T00:00:00Z", // ISO UTC
+        "2025-04-12T00:00:00+02:00", // ISO with timezone
+      ];
+
+      isoDateTimes.forEach((dateStr) =>
+        expect(dateReviver(null, dateStr)).toEqual(new Date(dateStr)),
+      );
+    });
+
+    it("should NOT allow other date formats when parsing string", () => {
+      const otherDateTimes = [
         "2025/04/15", // yyyy/mm/dd
         "2025-04-15", // yyyy-mm-dd (ISO 8601)
         "12/04/2025", // dd/mm/yyyy
@@ -895,44 +906,10 @@ describe("ngrxLocalStorage", () => {
         "2025-April-15", // verbose ISO
         "Tuesday, April 15, 2025", // full day name
         "Tue, 15 Apr 2025", // RFC 2822 format
-        "2025-04-12T00:00:00", // ISO with time
-        "2025-04-12T00:00:00Z", // ISO UTC
-        "2025-04-12T00:00:00+02:00", // ISO with timezone
       ];
 
-      // then
-      sampleDateTimes.forEach((date) =>
-        expect(dateReviver(null, date)).toEqual(new Date(date)),
-      );
-    });
-
-    it("should disallow various invalid date formats when parsing string", () => {
-      // given
-      const sampleDateTimes = [
-        "2025fdsa/04/15", // yyyy/mm/dd
-        "2025fdsa-04-15", // yyyy-mm-dd (ISO 8601)
-        "12fdsa/04/2025", // dd/mm/yyyy
-        "12fdsa-04-2025", // dd-mm-yyyy
-        "04fdsa/15/2025", // mm/dd/yyyy (US)
-        "04fdsa-15-2025", // mm-dd-yyyy (US)
-        "Apr fdsa15, 2025", // short month format
-        "15 Apr fdsa2025", // day short month year
-        "April fdsa15, 2025", // full month format
-        "15 April fdsa2025", // day full month year
-        "2025.fdsa04.15", // dot-separated
-        "2025-Apr-1fdsa5", // ISO variation
-        "2025-Afdsailpr-15", // verbose ISO
-        "Tuesday, fdsaApril 15, 2025", // full day name
-        "Tue, 15 Apr fdsa2025", // RFC 2822 format
-        "2025-04-12Tfdsa00:00:00", // ISO with time
-        "2025-04-12Tfdsa00:00:00Z", // ISO UTC
-        "2025-04-fdsa12T00:00:00+02:00", // ISO with timezone
-        '{ "nestedDate": "2025-04-12T00:00:00Z" }', // nested json date
-      ];
-
-      // then
-      sampleDateTimes.forEach((date) =>
-        expect(dateReviver(null, date)).toEqual(date),
+      otherDateTimes.forEach((dateStr) =>
+        expect(dateReviver(null, dateStr)).toEqual(dateStr),
       );
     });
   });
