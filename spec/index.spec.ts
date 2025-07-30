@@ -906,6 +906,7 @@ describe("ngrxLocalStorage", () => {
         "2025-April-15", // verbose ISO
         "Tuesday, April 15, 2025", // full day name
         "Tue, 15 Apr 2025", // RFC 2822 format
+        '{ "nestedDate": "2025-04-12T00:00:00Z" }', // nested json date
       ];
 
       otherDateTimes.forEach((dateStr) =>
