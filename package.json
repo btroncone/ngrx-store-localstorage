@@ -6,7 +6,7 @@
     "build_dist": "npm run clean && ng build lib --configuration production && npm run copy_lib_assets",
     "clean": "rimraf dist",
     "lint": "npm run eslint && npm run prettier:check",
-    "eslint": "ng lint --fix",
+    "eslint": "eslint --fix",
     "ng": "ng",
     "prettier": "prettier --write \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
     "prettier:check": "prettier --check \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
