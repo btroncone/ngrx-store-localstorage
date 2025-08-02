@@ -11,7 +11,7 @@
     "prettier": "prettier --write \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
     "prettier:check": "prettier --check \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
     "test": "nyc ts-node --compiler-options {\\\"module\\\":\\\"commonjs\\\"} node_modules/jasmine/bin/jasmine",
-    "prepare": "husky install",
+    "prepare": "husky",
     "copy_lib_assets": "copyfiles README.md CHANGELOG.md LICENSE ./dist/lib/"
   },
   "dependencies": {
